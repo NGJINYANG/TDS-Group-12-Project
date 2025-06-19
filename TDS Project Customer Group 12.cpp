@@ -225,36 +225,34 @@ void loadDrinksFromFile() {
 }
 
 void loadCustomers() {
-    // Initialize guest account (ID 0)
+    ifstream file("customers.txt");
+    if (!file) {
+        cout << "No existing customer data\n";
+        return;
+    }
+    
+    // Initialize guest account
     customers[0].id = 0;
     strcpy(customers[0].name, "Guest");
     strcpy(customers[0].email, "guest@system");
     strcpy(customers[0].password, "");
     customers[0].cart = nullptr;
     customers[0].orderHistory = nullptr;
-    customerCount = 1; // Guest is always at index 0
+    customerCount = 1; // Guest is index 0
 
-    ifstream file("customers.txt");
-    if (!file) {
-        cout<<"No existing customer data. Using guest account only.\n";
-        return;
-    }
-    
     // Load registered customers starting from index 1
     while (customerCount < MAX_CUSTOMERS && 
            file >> customers[customerCount].id) {
-        file.ignore(); // Skip newline after ID
-        file.getline(customers[customerCount].name, 50);
-        file.getline(customers[customerCount].email, 100);
+        file.ignore();
+        file.getline(customers[customerCount].name, 50, ' ');
+        file.getline(customers[customerCount].email, 100, ' ');
         file.getline(customers[customerCount].password, 50);
         
         customers[customerCount].cart = nullptr;
         customers[customerCount].orderHistory = nullptr;
         customerCount++;
     }
-    
     file.close();
-    cout<<"Loaded " << (customerCount - 1) << " registered customers\n";
 }
 
 void saveCustomers() {
@@ -1010,21 +1008,56 @@ void viewProfile() {
     int choice;
     cout<<"| Enter choice: ";
     cin>>choice;
+    cin.ignore(); // Clear input buffer
     
     if (choice == 1) {
         cout<<"| New name: ";
-        cin.ignore();
-        cin.getline(currentCustomer->name, 50);
+        char newName[50];
+        cin.getline(newName, 50);
+        strcpy(currentCustomer->name, newName);
         cout<<"+-----------------------------+\n";
         cout<<"| Name updated!              |\n";
         cout<<"+-----------------------------+\n";
         pressAnyKey();
     }
     else if (choice == 2) {
-        char newPassword[50];
-        cout<<"| New password: ";
-        cin>>newPassword;
-        strcpy(currentCustomer->password, newPassword);
+        char currentPwd[50], newPwd[50], confirmPwd[50];
+        
+        // Verify current password
+        cout<<"| Current password: ";
+        cin.getline(currentPwd, 50);
+        
+        if (strcmp(currentPwd, currentCustomer->password) != 0) {
+            cout<<"+-----------------------------+\n";
+            cout<<"| Incorrect current password!|\n";
+            cout<<"+-----------------------------+\n";
+            pressAnyKey();
+            return;
+        }
+        
+        // Get new password with validation
+        bool valid = false;
+        do {
+            cout<<"| New password (6-10 chars): ";
+            cin.getline(newPwd, 50);
+            
+            if (strlen(newPwd) < 6 || strlen(newPwd) > 10) {
+                cout<<"| Password must be 6-10 characters!\n";
+                continue;
+            }
+            
+            cout<<"| Confirm new password: ";
+            cin.getline(confirmPwd, 50);
+            
+            if (strcmp(newPwd, confirmPwd) != 0) {
+                cout<<"| Passwords don't match!\n";
+            } else {
+                valid = true;
+            }
+        } while (!valid);
+        
+        // Update password
+        strcpy(currentCustomer->password, newPwd);
         cout<<"+-----------------------------+\n";
         cout<<"| Password updated!          |\n";
         cout<<"+-----------------------------+\n";
