@@ -1,0 +1,5 @@
+======= Drink Summary Report =======
+Total number of drinks: 15
+Total stock: 3330
+Total value of stock: RM 58060.00
+====================================

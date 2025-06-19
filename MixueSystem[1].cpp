@@ -1,0 +1,1638 @@
+#include <iostream>
+#include <fstream>
+#include <cstring>
+#include <limits> 
+#include <iomanip>
+#include <conio.h> //hide the password using *
+#include <sstream>
+
+using namespace std;
+
+#define MAX 100
+
+//base classes 
+struct Person {
+    int id;
+    char name[50];
+};
+
+struct Item {
+    int id;
+    char name[50];
+    double price;
+    int stock;
+};
+
+struct OrderHistory {
+    int orderId;
+    time_t orderDate;
+    float totalAmount;
+    int itemCount;
+    OrderHistory* next;
+};
+
+//derived classes 
+struct Admin: 
+public Person {
+	char password[30];
+};
+
+struct Customers: 
+public Person {
+	char name[50];
+    char password[20];
+    char email[50];
+};
+
+struct Drink: 
+public Item {
+    char type[30];
+    friend void displayDrink();
+    friend void displayDrinkType();
+    friend void sortDrink();
+};
+
+
+//queue
+struct DrinkQueue {
+    Drink queue[MAX];
+    int front = -1;
+    int rear = -1;
+
+    bool isEmpty() { return front == -1; }
+    bool isFull() { return rear == MAX - 1; }
+
+    void enqueue(Drink d) {
+        if (isFull()) {
+            cout << "Drink queue is full.\n";
+            return;
+        }
+        if (isEmpty()) front = 0;
+        rear++;
+        queue[rear] = d;
+    }
+
+    void displayQueue() {
+        if (isEmpty()) {
+            cout << "No drinks in queue.\n";
+            return;
+        }
+        for (int i = front; i <= rear; i++) {
+            Drink& d = queue[i];
+            cout << "ID: " << d.id << ", Name: " << d.name
+                 << ", Type: " << d.type << ", Price: RM" << d.price
+                 << ", Stock: " << d.stock << endl;
+        }
+    }
+};
+
+DrinkQueue drinkQueue;
+
+// ========== Function Prototypes ==========
+void pause();
+void clearScreen();
+void printCentered(const string& text, int width = 80);
+void loadDrinksFromFile();
+void saveDrinksToFile();
+
+void mainMenu();
+
+void inputPassword(char* password, int maxLength);
+void adminRegister();
+bool adminLogin();
+bool adminLogout() { return true; };
+
+void addDrink();
+void editDrink();
+void displayDrink();
+void displayDrinkType();
+void searchDrink();
+void sortDrink();
+void deleteDrink();
+
+void addCustomers();
+void editCustomers();
+void displayCustomers(); 
+void sortCustomers();
+void deleteCustomers();
+void searchCustomers();
+void viewOrderHistory();
+
+void generateReport();
+
+// ========== Utility Functions ==========
+void printCentered(const string& text, int width) {
+    int pad = (width - (int)text.length()) / 2;
+    if (pad < 0) pad = 0;
+    cout << string(pad, ' ') << text << endl;
+}
+
+void pause() {
+	cin.clear();
+    cin.ignore(numeric_limits<streamsize>::max(), '\n');//Clears any leftover input from the user 
+    cout << "\nPress Enter to continue...";
+    cin.get();
+}
+
+void clearScreen() {
+#ifdef _WIN32
+    system("cls");
+#else
+    system("clear");
+#endif
+}; 
+
+// ========== File Handling ==========
+void loadDrinksFromFile() {
+    ifstream file("mixue2.txt");
+    if (!file) {
+        cout << "No existing drink data found.\n";
+        return;
+    }
+
+    drinkQueue.front = 0;
+    drinkQueue.rear = -1;  
+
+    string line;
+    while (getline(file, line)) {
+        stringstream ss(line);
+        string idStr, name, type, priceStr, stockStr;
+
+        getline(ss, idStr, ',');
+        getline(ss, name, ',');
+        getline(ss, type, ',');
+        getline(ss, priceStr, ',');
+        getline(ss, stockStr);
+
+        Drink d;
+        d.id = stoi(idStr);
+        strncpy(d.name, name.c_str(), sizeof(d.name));
+        strncpy(d.type, type.c_str(), sizeof(d.type));
+        d.price = stof(priceStr);
+        d.stock = stoi(stockStr);
+
+        drinkQueue.enqueue(d);
+    }
+
+    file.close();
+}; 
+
+void saveDrinksToFile() {
+    ofstream outFile("mixue2.txt");
+    if (!outFile) {
+        cout << "Error saving to file.\n";
+        return;
+    }
+    for (int i = drinkQueue.front; i <= drinkQueue.rear; i++) {
+        Drink& d = drinkQueue.queue[i];
+        outFile << d.id << "," << d.name << "," << d.type << "," << d.price << "," << d.stock << endl;
+    }
+    outFile.close();
+}; 
+
+// ========== Admin Authentication ==========
+void inputPassword(char* password, int maxLength) {
+    int index = 0;
+    char ch;
+
+    while ((ch = _getch()) != 13) { 
+        if (index < maxLength - 1 && isprint(ch)) { 
+            password[index++] = ch;
+            cout << '*';
+        }
+    }
+
+    password[index] = '\0'; 
+    cout << endl;
+}; 
+
+void adminRegister() {
+	clearScreen();
+	Admin newAdmin;
+
+    cout << "=== Admin Registration ===" << endl;
+    cout << "Enter username: ";
+    cin.getline(newAdmin.name, 30);
+    cout << "Enter password: ";
+    inputPassword(newAdmin.password, 30);
+
+    ofstream outFile("adminAccounts.txt", ios::app);
+    if (!outFile) {
+        cout << "Error opening file for writing!" << endl;
+        return;
+    }
+
+    outFile << newAdmin.name << " " << newAdmin.password << endl;
+    outFile.close();
+    
+    cout << "Registration Complete" << endl;
+}; 
+
+
+
+bool adminLogin() {
+    clearScreen();
+    char inputUsername[30];
+    char inputPwd[30];
+
+    cout << "\n=== Admin Login ===\n";
+    cout << "Enter username: ";
+    cin.getline(inputUsername, 30);
+    cout << "Enter password: ";
+    inputPassword(inputPwd, 30);
+
+    ifstream inFile("adminAccounts.txt");
+    if (!inFile) {
+        cout << "Error opening file for reading!\n";
+        return false;
+    }
+
+    char fileUsername[30], filePassword[30];
+    while (inFile >> fileUsername >> filePassword) {
+        if (strcmp(inputUsername, fileUsername) == 0 &&
+            strcmp(inputPwd, filePassword) == 0) {
+            inFile.close();
+            cout << "Login successful!\n";
+            pause();
+            return true;
+        }
+    }
+
+    inFile.close();
+    cout << "Incorrect username or password.\n";
+    pause();
+    return false;  //  remove duplicated comparison
+}; 
+
+// ========== Main Function ==========
+//main
+int main() {
+    int choice;
+    do {
+    	clearScreen(); 
+    	cout << "\n===== Admin System =====\n";
+        cout << "1. Register\n";
+        cout << "2. Login\n";
+        cout << "0. Exit\n";
+        cout << "Enter choice: ";
+        cin >> choice;
+        cin.ignore();
+        
+        switch (choice) {
+            case 1: 
+				adminRegister(); 
+				break;
+            case 2:
+                if (adminLogin()) {
+					mainMenu();
+                }else{
+					cout << "Invalid username or password.\n";
+                }
+				break;
+            case 0: 
+            	cout << "Exiting program.\n";
+            	break;
+            default: 
+				cout << "Invalid choice, try again.\n";
+        }
+    } while (choice != 0);
+    
+    return 0;
+}
+
+// ========== Menu Navigation ==========
+void mainMenu() {
+    int choice;
+    loadDrinksFromFile();
+
+    do {
+        clearScreen();
+
+        // Drink Section
+        cout << "=== Drink Management ===\n";
+        cout << "1. Add New Drink\n";
+        cout << "2. Edit Drink Details\n";
+        cout << "3. Delete Drink\n";
+        cout << "4. Display All Drinks\n";
+        cout << "5. Search Drink\n";
+        cout << "6. Display Drinks by Type\n\n";
+
+        // User Section
+        cout << "=== User Management ===\n";
+        cout << "7. Add New Customers\n";
+        cout << "8. Edit Customers Details\n";
+        cout << "9. Delete Customers\n";
+        cout << "10. Display All Customers\n";
+        cout << "11. Search Customers\n";
+        cout << "12. View Order History\n\n";
+
+        // Other Section
+        cout << "=== Other Options ===\n";
+        cout << "13. Generate Summary Report\n";
+        cout << "14. Logout\n";
+        cout << "0. Back to Main Menu\n\n";
+
+        cout << "Please choose an option: ";
+        cin >> choice;
+        cin.ignore();
+
+        switch (choice) {
+            case 1: addDrink(); break;
+            case 2: editDrink(); break;
+            case 3: deleteDrink(); break;
+            case 4: displayDrink(); break;
+            case 5: searchDrink(); break;
+            case 6: displayDrinkType(); break;
+            case 7: addCustomers(); break;
+            case 8: editCustomers(); break;
+            case 9: deleteCustomers(); break;
+            case 10: displayCustomers(); break;
+			case 11: searchCustomers(); break;
+            case 12: viewOrderHistory(); break;
+            case 13: generateReport(); break;
+            case 14: if (adminLogout()) return; break;
+            case 0: break; // back to upper menu
+            default:
+                cout << "? Invalid choice!\n";
+                pause();
+        }
+
+    } while (choice != 0);
+}; 
+
+// ========== Drink Management ==========
+void addDrink() {
+    while (true) {
+        clearScreen();
+        Drink newDrink;
+        string idInput, priceInput, stockInput;
+
+        cout << "=== Add New Drink(0 to cancel) ===\n";
+
+        // Input Drink ID (numbers only)
+        while (true) {
+            cout << "Enter Drink ID: ";
+            getline(cin, idInput);
+
+            if (idInput == "0") return; 
+            bool valid = true;
+            for (char c : idInput) {
+                if (!isdigit(c)) {
+                    valid = false;
+                    break;
+                }
+            }
+
+            if (valid && !idInput.empty()) {
+                newDrink.id = stoi(idInput);
+                break;
+            } else {
+                cout << "Invalid input! Drink ID must contain only digits.\n";
+            }
+        }
+
+        // Input Drink Name (letters and spaces only)
+        while (true) {
+            cout << "Enter Drink Name: ";
+            cin.getline(newDrink.name, 50);
+
+            if (strcmp(newDrink.name, "0") == 0) return; 
+
+            bool valid = true;
+            for (int i = 0; newDrink.name[i] != '\0'; i++) {
+                if (!isalpha(newDrink.name[i]) && newDrink.name[i] != ' ') {
+                    valid = false;
+                    break;
+                }
+            }
+
+            if (valid && strlen(newDrink.name) > 0) break;
+            else cout << "Invalid input! Name must contain only letters and spaces.\n";
+        }
+
+        // Input Drink Type (letters only)
+        while (true) {
+            cout << "Enter Drink Type: ";
+            cin.getline(newDrink.type, 30);
+
+            if (strcmp(newDrink.type, "0") == 0) return;
+
+            bool valid = true;
+            for (int i = 0; newDrink.type[i] != '\0'; i++) {
+                if (!isalpha(newDrink.type[i]) && newDrink.type[i] != ' ') {
+                    valid = false;
+                    break;
+                }
+            }
+
+            if (valid && strlen(newDrink.type) > 0) break;
+            else cout << "Invalid input! Type must contain only letters and spaces.\n";
+        }
+
+        // Input Price (positive number only)
+        while (true) {
+            cout << "Enter Price: ";
+            getline(cin, priceInput);
+
+            if (priceInput == "0") return; 
+
+            bool valid = true;
+            int dotCount = 0;
+            for (char c : priceInput) {
+                if (c == '.') {
+                    dotCount++;
+                    if (dotCount > 1) {
+                        valid = false;
+                        break;
+                    }
+                } else if (!isdigit(c)) {
+                    valid = false;
+                    break;
+                }
+            }
+
+            if (valid && !priceInput.empty()) {
+                newDrink.price = stod(priceInput);
+                if (newDrink.price > 0) break;
+            }
+
+            cout << "Invalid input! Price must be a positive number.\n";
+        }
+
+        // Input Stock (positive integer only)
+        while (true) {
+            cout << "Enter Stock Quantity: ";
+            getline(cin, stockInput);
+
+            if (stockInput == "0") return;
+
+            bool valid = true;
+            for (char c : stockInput) {
+                if (!isdigit(c)) {
+                    valid = false;
+                    break;
+                }
+            }
+
+            if (valid && !stockInput.empty()) {
+                newDrink.stock = stoi(stockInput);
+                if (newDrink.stock >= 0) break;
+            }
+
+            cout << "Invalid input! Stock must be a positive number.\n";
+        }
+
+        // Add to queue and save to file
+        drinkQueue.enqueue(newDrink);
+
+        ofstream outFile("mixue2.txt", ios::app);
+        if (!outFile) {
+            cout << "Error writing to file!\n";
+            pause();
+            return;
+        }
+
+        outFile << newDrink.id << ","
+                << newDrink.name << ","
+                << newDrink.type << ","
+                << newDrink.price << ","
+                << newDrink.stock << endl;
+
+        outFile.close();
+
+        cout << "\nDrink added successfully!\n";
+        pause();
+
+        // Loop again to add another drink unless user cancels with 0 at next ID input
+    }
+}; 
+
+void editDrink() {
+    while (true) {
+        clearScreen();
+
+        if (drinkQueue.isEmpty()) {
+            cout << "No drinks available to edit.\n";
+            pause();
+            return;
+        }
+        cout << "=== Edit Drink Menu(ID,Name&Type:0 to return to menu) ===\n";
+
+        string idInput;
+        cout << "Enter Drink ID to edit: ";
+        getline(cin, idInput);
+
+        if (idInput == "0") return;
+
+        bool validId = true;
+        for (char c : idInput) {
+            if (!isdigit(c)) {
+                validId = false;
+                break;
+            }
+        }
+
+        if (!validId || idInput.empty()) {
+            cout << "Invalid Drink ID! Please enter a valid number.\n";
+            pause();
+            continue;
+        }
+
+        int editId = stoi(idInput);
+        int idx = -1;
+        for (int i = drinkQueue.front; i <= drinkQueue.rear; i++) {
+            if (drinkQueue.queue[i].id == editId) {
+                idx = i;
+                break;
+            }
+        }
+
+        if (idx == -1) {
+            cout << "Drink ID not found.\n";
+            pause();
+            continue;
+        }
+
+        Drink& d = drinkQueue.queue[idx];
+        cout << "Editing Drink: " << d.name << "\n";
+
+        // Name
+        cout << "Current Name: " << d.name << "\n";
+        cout << "Enter new name(Enter to keep): ";
+        char newName[50];
+        cin.getline(newName, 50);
+        if (strcmp(newName, "0") == 0) return;
+        if (strlen(newName) > 0) {
+            bool valid = true;
+            for (int i = 0; newName[i] != '\0'; i++) {
+                if (!isalpha(newName[i]) && newName[i] != ' ') {
+                    valid = false;
+                    break;
+                }
+            }
+            if (valid) {
+                strcpy(d.name, newName);
+            } else {
+                cout << "Invalid name! Only letters and spaces allowed.\n";
+                pause();
+                continue;
+            }
+        }
+
+        // Type
+        cout << "Current Type: " << d.type << "\n";
+        cout << "Enter new type(Enter to keep): ";
+        char newType[30];
+        cin.getline(newType, 30);
+        if (strcmp(newType, "0") == 0) return;
+        if (strlen(newType) > 0) {
+            bool valid = true;
+            for (int i = 0; newType[i] != '\0'; i++) {
+                if (!isalpha(newType[i]) && newType[i] != ' ') {
+                    valid = false;
+                    break;
+                }
+            }
+            if (valid) {
+                strcpy(d.type, newType);
+            } else {
+                cout << "Invalid type! Only letters and spaces allowed.\n";
+                pause();
+                continue;
+            }
+        }
+
+        // Price
+        cout << "Current Price: RM " << fixed << setprecision(2) << d.price << "\n";
+        cout << "Enter new price (Enter to keep): ";
+        string priceInput;
+        getline(cin, priceInput);
+        if (!priceInput.empty()) {
+            try {
+                double newPrice = stod(priceInput);
+                if (newPrice >= 0) {
+                    d.price = newPrice;
+                } else {
+                    cout << "Invalid price! Must be >= 0.\n";
+                    pause();
+                    continue;
+                }
+            } catch (...) {
+                cout << "Invalid input for price.\n";
+                pause();
+                continue;
+            }
+        }
+
+        // Stock
+        cout << "Current Stock: " << d.stock << "\n";
+        cout << "Enter new stock (Enter to keep): ";
+        string stockInput;
+        getline(cin, stockInput);
+        if (!stockInput.empty()) {
+            try {
+                int newStock = stoi(stockInput);
+                if (newStock >= 0) {
+                    d.stock = newStock;
+                } else {
+                    cout << "Invalid stock! Must be >= 0.\n";
+                    pause();
+                    continue;
+                }
+            } catch (...) {
+                cout << "Invalid input for stock.\n";
+                pause();
+                continue;
+            }
+        }
+
+        // Save
+        ofstream outFile("mixue2.txt");
+        for (int j = drinkQueue.front; j <= drinkQueue.rear; j++) {
+            Drink& dd = drinkQueue.queue[j];
+            outFile << dd.id << "," << dd.name << "," << dd.type << "," << dd.price << "," << dd.stock << endl;
+        }
+        outFile.close();
+
+        cout << "Drink updated successfully!\n";
+        pause();
+    }
+};
+
+void searchDrink() {
+    clearScreen();
+    loadDrinksFromFile();
+
+    if (drinkQueue.isEmpty()) {
+        cout << "No drinks available to search.\n";
+        pause();
+        return;
+    }
+
+    char input[100];
+
+    while (true) {
+        clearScreen();
+
+        cout << "==================== Search Drink Page ====================\n";
+        cout << "\n                       Drink List\n";
+        cout << "------------------------------------------------------------------\n";
+        cout << "| ID  | Name               | Type         | Price (RM) | Stock   |\n";
+        cout << "------------------------------------------------------------------\n";
+
+        // Display all drinks in the queue
+        for (int i = drinkQueue.front; i <= drinkQueue.rear; i++) {
+            Drink& d = drinkQueue.queue[i];
+            cout << "| " << setw(4) << right << d.id << " | "
+                 << setw(18) << left << d.name << "| "
+                 << setw(12) << left << d.type << "| "
+                 << setw(10) << right << fixed << setprecision(2) << d.price << " | "
+                 << setw(7) << right << d.stock << " |\n";
+        }
+
+        cout << "------------------------------------------------------------------\n";
+        cout << "\nEnter Drink ID, Name, or Type to search (0 to go back): ";
+        cin.getline(input, 100);
+
+        if (strcmp(input, "0") == 0) break;
+
+        // Convert user input to lowercase keyword
+        string keyword = input;
+        for (char& c : keyword) c = tolower(c);
+
+        // Create an array to store matched drinks
+        Drink resultList[MAX];
+        int matchCount = 0;
+
+        // Loop through the queue and find matches
+        for (int i = drinkQueue.front; i <= drinkQueue.rear; i++) {
+            Drink& d = drinkQueue.queue[i];
+            string name = d.name;
+            string type = d.type;
+
+            // Convert name and type to lowercase for case-insensitive comparison
+            for (char& c : name) c = tolower(c);
+            for (char& c : type) c = tolower(c);
+
+            bool idMatch = false;
+            if (isdigit(input[0])) {
+                int inputId = atoi(input);
+                idMatch = (d.id == inputId);
+            }
+
+            // If ID matches, or name/type contains keyword, store the result
+            if (idMatch || name.find(keyword) != string::npos || type.find(keyword) != string::npos) {
+                resultList[matchCount++] = d;
+            }
+        }
+
+        // Display the search results
+        clearScreen();
+        cout << "==================== Search Result ====================\n";
+        cout << "\n                       Drink List\n";
+        cout << "------------------------------------------------------------------\n";
+        cout << "| ID  | Name               | Type         | Price (RM) | Stock   |\n";
+        cout << "------------------------------------------------------------------\n";
+
+        if (matchCount > 0) {
+            for (int i = 0; i < matchCount; i++) {
+                Drink& d = resultList[i];
+                cout << "| " << setw(4) << right << d.id << " | "
+                     << setw(18) << left << d.name << "| "
+                     << setw(12) << left << d.type << "| "
+                     << setw(10) << right << fixed << setprecision(2) << d.price << " | "
+                     << setw(7) << right << d.stock << " |\n";
+            }
+        } else {
+            cout << "|                  No matching drinks found.                  |\n";
+        }
+
+        cout << "------------------------------------------------------------------\n";
+        pause(); // Wait for user to press Enter before going back to search page
+    }
+}; 
+
+void deleteDrink() {
+    loadDrinksFromFile();
+
+    if (drinkQueue.front == -1) {
+        cout << "No drinks available to delete.\n";
+        pause();
+        return;
+    }
+
+    while (true) {
+        clearScreen();
+
+        cout << "                             Drink List\n";
+        cout << "------------------------------------------------------------------\n";
+        cout << "| ID  | Name               | Type         | Price (RM) | Stock   |\n";
+        cout << "------------------------------------------------------------------\n";
+
+        for (int i = drinkQueue.front; i <= drinkQueue.rear; i++) {
+            Drink& d = drinkQueue.queue[i];
+            cout << "| " << setw(4) << d.id
+                 << " | " << setw(18) << left << d.name
+                 << "| " << setw(13) << left << d.type
+                 << "| " << setw(10) << right << d.price
+                 << "| " << setw(7) << right << d.stock << " |\n";
+        }
+        cout << "------------------------------------------------------------------\n";
+
+        int delId;
+        cout << "Enter Drink ID to delete (0 to cancel): ";
+        if (!(cin >> delId)) {
+            cin.clear();
+            cin.ignore(numeric_limits<streamsize>::max(), '\n');
+            cout << "Invalid input. Please enter a valid numeric ID.\n";
+            pause();
+            continue;
+        }
+        cin.ignore();
+
+        if (delId == 0) {
+            cout << "Exiting delete menu.\n";
+            pause();
+            return;
+        }
+        bool found = false;
+        for (int i = drinkQueue.front; i <= drinkQueue.rear; i++) {
+            if (drinkQueue.queue[i].id == delId) {
+                found = true;
+                for (int j = i; j < drinkQueue.rear; j++) {
+                    drinkQueue.queue[j] = drinkQueue.queue[j + 1];
+                }
+                drinkQueue.rear--;
+
+                if (drinkQueue.rear < drinkQueue.front) {
+                    drinkQueue.front = -1;
+                    drinkQueue.rear = -1;
+                }
+
+                cout << "Drink deleted successfully.\n";
+                
+                saveDrinksToFile();
+
+                pause();
+                break;
+            }
+        }
+
+        if (!found) {
+            cout << "Drink ID not found.\n";
+            pause();
+        }
+
+        if (drinkQueue.front == -1) {  
+            cout << "All drinks have been deleted.\n";
+            pause();
+            return;
+        }
+    }
+}; 
+
+void displayDrink() {
+    clearScreen();
+    sortDrink(); 
+    
+    cout << "\n                             Drink List                         \n";
+    cout << "------------------------------------------------------------------\n";
+    cout << "| ID  | Name               | Type         | Price (RM) | Stock   |\n";
+    cout << "------------------------------------------------------------------\n";
+
+    for (int i = drinkQueue.front; i <= drinkQueue.rear; i++) {
+        Drink d = drinkQueue.queue[i];
+        cout << "| " << setw(4) << left << d.id
+             << "| " << setw(20) << left << d.name
+             << "| " << setw(15) << left << d.type
+             << "| " << setw(10) << fixed << setprecision(2) << d.price
+             << "| " << setw(8) << d.stock
+             << "|\n";
+    }
+    cout << "------------------------------------------------------------------\n";
+    pause();
+}; 
+
+void displayDrinkType() {
+    clearScreen();
+    char type[30];
+    
+    cout << "Enter drink type to display: ";
+    cin.getline(type, 30);
+
+    bool found = false;
+
+    cout << "\n               Drinks of Type: \"" << type << "\"\n";
+    cout << "-----------------------------------------------------------------\n";
+    cout << "| ID  | Name               | Type         | Price (RM) | Stock   |\n";
+    cout << "-----------------------------------------------------------------\n";
+
+    for (int i = drinkQueue.front; i <= drinkQueue.rear; i++) {
+        if (strcmp(drinkQueue.queue[i].type, type) == 0) {
+            Drink d = drinkQueue.queue[i];
+            cout << "| " << setw(4) << left << d.id
+                 << "| " << setw(19) << left << d.name
+                 << "| " << setw(13) << left << d.type
+                 << "| " << setw(10) << fixed << setprecision(2) << d.price
+                 << "| " << setw(8) << d.stock
+                 << "|\n";
+            found = true;
+        }
+    }
+
+    cout << "-----------------------------------------------------------------\n";
+    if (!found) {
+    	cout << "No drinks found for the type \"" << type << "\".\n";
+
+    }
+    pause();
+}; 
+
+void sortDrink() {
+    
+    for (int i = drinkQueue.front; i < drinkQueue.rear; i++) {
+        for (int j = drinkQueue.front; j < drinkQueue.rear - (i - drinkQueue.front); j++) {
+            if (drinkQueue.queue[j].id > drinkQueue.queue[j + 1].id) {
+                Drink temp = drinkQueue.queue[j];
+                drinkQueue.queue[j] = drinkQueue.queue[j + 1];
+                drinkQueue.queue[j + 1] = temp;
+            }
+        }
+    }
+}; 
+
+void viewOrderHistory() {
+    clearScreen();
+    ifstream file("order_history.txt");
+
+    if (!file) {
+        cout << "Failed to open order_history.txt\n";
+        pause();
+        return;
+    }
+
+    string line, fullLine;
+    int count = 0;
+
+    cout << "                             Order History\n";
+    cout << "-----------------------------------------------------------------------------\n";
+    cout << "| No | Customer ID | Order ID |       Date & Time       | Qty |  Total (RM) |\n";
+    cout << "-----------------------------------------------------------------------------\n";
+
+    while (getline(file, line)) {
+        // Skip empty lines
+        if (line.empty()) continue;
+
+        fullLine = line;
+        // Keep reading until the line ends with '|'
+        while (!fullLine.empty() && fullLine.back() != '|') {
+            string nextPart;
+            if (!getline(file, nextPart)) break; // EOF
+            fullLine += "\n" + nextPart; // Retain newlines inside itemDetails
+        }
+
+        stringstream ss(fullLine);
+        string customerId, orderId, dateTime, totalPrice, totalQty, itemDetails;
+        getline(ss, customerId, '|');
+        getline(ss, orderId, '|');
+        getline(ss, dateTime, '|');
+        getline(ss, totalPrice, '|');
+        getline(ss, totalQty, '|');
+        getline(ss, itemDetails, '|');
+
+        cout << "| " << setw(3) << ++count
+             << " | " << setw(11) << customerId
+             << " | " << setw(8) << orderId
+             << " | " << setw(21) << dateTime
+             << " | " << setw(3) << totalQty
+             << " | " << setw(11) << totalPrice << " |\n";
+
+        cout << "-----------------------------------------------------------------------------\n";
+        cout << "  Items:\n";
+
+        // Print itemDetails line by line
+        stringstream itemStream(itemDetails);
+        string itemLine;
+        while (getline(itemStream, itemLine)) {
+            itemLine.erase(0, itemLine.find_first_not_of(" \t"));
+            itemLine.erase(itemLine.find_last_not_of(" \t\r") + 1);
+            if (!itemLine.empty()) {
+                cout << "  - " << itemLine << "\n";
+            }
+        }
+
+        cout << "-----------------------------------------------------------------------------\n";
+    }
+
+    if (count == 0) {
+        cout << "No orders found.\n";
+    }
+
+    file.close();
+    pause();
+}; 
+// ========== Customer Management ==========
+void editCustomers() {
+    while (true) {
+        clearScreen();
+        cout << "=== Edit Customers Details((0 to return to menu)) ===\n";
+   
+        string idInput;
+        cout << "Enter Customers ID to edit: ";
+        getline(cin, idInput);
+
+        if (idInput == "0") return;
+
+        // Validate ID
+        bool validId = true;
+        for (char c : idInput) {
+            if (!isdigit(c)) {
+                validId = false;
+                break;
+            }
+        }
+
+        if (!validId || idInput.empty()) {
+            cout << "Invalid input! Customers ID must be numeric.\n";
+            pause();
+            continue;
+        }
+
+        int customerId = stoi(idInput);
+        Customers customers[50];
+        int count = 0;
+
+        ifstream inFile("customers.txt");
+        if (!inFile) {
+            cout << "Error opening users.txt file.\n";
+            pause();
+            return;
+        }
+
+        while (inFile >> customers[count].id) {
+            inFile.ignore();
+            inFile.getline(customers[count].name, 50, ',');
+			inFile.getline(customers[count].email, 50, ',');
+            inFile.getline(customers[count].password, 20);
+            count++;
+            if (count >= 50) break;
+        }
+        inFile.close();
+
+        int idx = -1;
+        for (int i = 0; i < count; i++) {
+            if (customers[i].id == customerId) {
+                idx = i;
+                break;
+            }
+        }
+
+        if (idx == -1) {
+            cout << "Customers ID not found.\n";
+            pause();
+            continue;
+        }
+
+        Customers& c = customers[idx];
+        cout << "\nEditing Customers: " << c.name << "\n";
+
+        string inputStr;
+
+        // Edit Name
+        cout << "Current Name: " << c.name << "\n";
+        cout << "Enter new Name(Enter to keep): ";
+        getline(cin, inputStr);
+        if (inputStr == "0") return;
+        if (!inputStr.empty()) {
+            bool valid = true;
+            for (char c : inputStr) {
+                if (!isalpha(c) && c != ' ') {
+                    valid = false;
+                    break;
+                }
+            }
+            if (valid) {
+                strncpy(c.name, inputStr.c_str(), sizeof(c.name));
+                c.name[sizeof(c.name) - 1] = '\0';
+            } else {
+                cout << "Invalid name! Letters and spaces only.\n";
+                pause();
+                continue;
+            }
+        }
+
+
+        // Edit Email
+        cout << "Current Email: " << c.email << "\n";
+        cout << "Enter new Email(Enter to keep): ";
+        getline(cin, inputStr);
+        if (inputStr == "0") return;
+        if (!inputStr.empty()) {
+            if (inputStr.find('@') != string::npos && inputStr.find('.') != string::npos) {
+                strncpy(c.email, inputStr.c_str(), sizeof(c.email));
+                c.email[sizeof(c.email) - 1] = '\0';
+            } else {
+                cout << "Invalid email format!\n";
+                pause();
+                continue;
+            }
+        }
+        
+        // Edit Password
+		cout << "Current Password: " << c.password << "\n";
+		cout << "Enter new Password (Press Enter to keep current): ";
+		getline(cin, inputStr);
+		if (inputStr == "0") return;
+		if (!inputStr.empty()) {
+   		 bool valid = true;
+
+    	// Check length
+    		if (inputStr.length() < 4) {
+      	  valid = false;
+   	 } else {
+        // Check allowed characters
+        for (char c : inputStr) {
+            if (!isalnum(c) && c != '@' && c != '#' && c != '_' && c != '-') {
+                valid = false;
+                break;
+            }
+        }
+    }
+
+    if (valid) {
+        strncpy(c.password, inputStr.c_str(), sizeof(c.password));
+        c.password[sizeof(c.password) - 1] = '\0';
+    } else {
+        cout << "Invalid password! Must be at least 4 characters and use only letters, digits, '@', '#', '-', '_'.\n";
+        pause();
+        continue;
+    }
+}
+
+        // Save changes
+        ofstream outFile("customers.txt");
+        if (!outFile) {
+            cout << "Error writing to users.txt\n";
+            pause();
+            return;
+        }
+
+        for (int i = 0; i < count; i++) {
+            outFile << customers[i].id << ","
+                    << customers[i].name << ","
+                    << customers[i].email << ","
+                    << customers[i].password << endl;
+        }
+        outFile.close();
+
+        cout << "User updated successfully.\n";
+        pause();
+    }
+};
+ 
+void searchCustomers() {
+    while (true) {
+        clearScreen();
+        cout << "==================== Search User Page ====================\n";
+
+        ifstream inFile("customers.txt");
+        if (!inFile) {
+            cout << "Error opening customers.txt file.\n";
+            pause();
+            return;
+        }
+
+        cout << "\nSearch by:\n";
+        cout << "1. Customers ID\n";
+        cout << "2. Name keyword\n";
+        cout << "0. Return to menu\n";
+        cout << "Enter choice: ";
+        string choiceInput;
+        getline(cin, choiceInput);
+
+        if (choiceInput == "0") {
+            inFile.close();
+            return;
+        }
+
+        bool found = false;
+        Customers resultList[100];
+        int resultCount = 0;
+
+        if (choiceInput == "1") {
+            string idInput;
+            cout << "Enter Customers ID to search (0 to cancel): ";
+            getline(cin, idInput);
+            if (idInput == "0") continue;
+
+            bool valid = true;
+            for (char c : idInput) {
+                if (!isdigit(c)) valid = false;
+            }
+
+            if (!valid || idInput.empty()) {
+                cout << "Invalid Customers ID! Must be numeric.\n";
+                pause();
+                continue;
+            }
+
+            int searchId = stoi(idInput);
+            Customers c;
+            while (inFile >> c.id) {
+                inFile.ignore();
+                inFile.getline(c.name, 50, ',');
+                inFile.getline(c.email, 50, ',');
+                inFile.getline(c.password, 20);
+
+                if (c.id == searchId) {
+                    resultList[resultCount++] = c;
+                    found = true;
+                    break;
+                }
+            }
+
+        } else if (choiceInput == "2") {
+            string keyword;
+            cout << "Enter Name keyword to search (0 to cancel): ";
+            getline(cin, keyword);
+            if (keyword == "0") continue;
+
+            for (char& c : keyword) c = tolower(c);
+
+            Customers c;
+            while (inFile >> c.id) {
+                inFile.ignore();
+                inFile.getline(c.name, 50, ',');
+                inFile.getline(c.email, 50, ',');
+                inFile.getline(c.password, 20);
+
+                string uname(c.name);
+                for (char& c : uname) c = tolower(c);
+
+                if (uname.find(keyword) != string::npos) {
+                    resultList[resultCount++] = c;
+                    found = true;
+                }
+            }
+
+        } else {
+            cout << "Invalid choice.\n";
+            pause();
+            continue;
+        }
+
+        inFile.close();
+
+        // Display result
+        clearScreen();
+        cout << "==================== Search Result ====================\n";
+        cout << "-----------------------------------------------------------\n";
+        cout << "| ID  | Name               | Email            | Password      |\n";
+        cout << "-----------------------------------------------------------\n";
+
+        if (found) {
+            for (int i = 0; i < resultCount; i++) {
+                Customers& u = resultList[i];
+                cout << "| " << setw(4) << right << u.id << " | "
+                     << setw(18) << left << u.name << "| "
+                     << setw(16) << left << u.email << "| "
+                     << setw(12) << left << u.password << " |\n";
+            }
+        } else {
+            cout << "|               No matching users found.                |\n";
+        }
+
+        cout << "-----------------------------------------------------------\n";
+        pause(); 
+    }
+}; 
+
+void deleteCustomers() {
+    while (true) {
+        clearScreen();
+
+        ifstream inFile("customers.txt");
+        if (!inFile) {
+            cout << "Unable to open customers.txt No users found.\n";
+            pause();
+            return;
+        }
+
+        bool hasCustomers = false;
+        string line;
+
+        cout << "==================== User List ====================\n";
+        cout << "| ID  | Name               | Email         | Password             |\n";
+        cout << "---------------------------------------------------------------\n";
+
+        while (getline(inFile, line)) {
+            stringstream ss(line);
+            string idStr, name, email, password;
+
+            getline(ss, idStr, ',');
+            getline(ss, name, ',');
+            getline(ss, email, ',');
+            getline(ss, password, ',');
+
+            if (!idStr.empty()) {
+                hasCustomers = true;
+                cout << "| " << setw(4) << idStr
+                     << " | " << setw(18) << left << name
+                     << "| " << setw(13) << left << email
+                     << "| " << setw(20) << left << password << "|\n";
+            }
+        }
+        inFile.close();
+
+        if (!hasCustomers) {
+            cout << "No users available to delete.\n";
+            pause();
+            return;
+        }
+
+        cout << "---------------------------------------------------------------\n";
+
+        int targetID;
+        cout << "Enter Customers ID to delete (0 to cancel): ";
+        if (!(cin >> targetID)) {
+            cin.clear();
+            cin.ignore(numeric_limits<streamsize>::max(), '\n');
+            cout << "Invalid input. Please enter a numeric ID.\n";
+            pause();
+            continue;
+        }
+        cin.ignore();
+
+        if (targetID == 0) {
+            cout << "Returning to previous menu...\n";
+            pause();
+            return;
+        }
+
+        ifstream CustomersFile("customers.txt");
+        ofstream tempFile("temp.txt");
+        bool found = false;
+
+        if (!CustomersFile || !tempFile) {
+            cout << "File error occurred.\n";
+            pause();
+            return;
+        }
+
+        while (getline(CustomersFile, line)) {
+            stringstream ss(line);
+            string idStr, name, password, email;
+
+            getline(ss, idStr, ',');
+            getline(ss, name, ',');
+			getline(ss, email, ',');
+            getline(ss, password, ',');
+
+            if (stoi(idStr) != targetID) {
+                tempFile << idStr << "," << name << "," << email << "," << password << endl;
+            } else {
+                found = true;
+            }
+        }
+
+        CustomersFile.close();
+        tempFile.close();
+
+        remove("customers.txt");
+        rename("temp.txt", "customers.txt");
+
+        if (found) {
+            cout << "Customers with ID " << targetID << " deleted successfully.\n";
+        } else {
+            cout << "Customers ID not found.\n";
+        }
+
+        pause();
+
+        char choice;
+        cout << "Do you want to delete another customers? (Y/N): ";
+        cin >> choice;
+        cin.ignore();
+
+        if (choice != 'Y' && choice != 'y') {
+            cout << "Returning to previous menu...\n";
+            pause();
+            return;
+        }
+    }
+}; 
+
+void addCustomers() {
+    while (true) {
+        clearScreen();
+        Customers newCustomers;
+        string idInput;
+
+        cout << "=== Add New Customers(0 to cancel) ===\n";
+
+        // Input User ID (digits only)
+        while (true) {
+            cout << "Enter Customers ID: ";
+            getline(cin, idInput);
+
+            if (idInput == "0") return;  
+
+            bool valid = true;
+            for (char c : idInput) {
+                if (!isdigit(c)) {
+                    valid = false;
+                    break;
+                }
+            }
+
+            if (valid && !idInput.empty()) {
+                newCustomers.id = stoi(idInput);
+                break;
+            } else {
+                cout << "Invalid input! Customers ID must contain only digits.\n";
+            }
+        }
+
+        // Input Name (letters and spaces only)
+        while (true) {
+            cout << "Enter Name: ";
+            cin.getline(newCustomers.name, 50);
+
+            if (strcmp(newCustomers.name, "0") == 0) return;
+
+            bool valid = true;
+            for (int i = 0; newCustomers.name[i] != '\0'; i++) {
+                if (!isalpha(newCustomers.name[i]) && newCustomers.name[i] != ' ') {
+                    valid = false;
+                    break;
+                }
+            }
+
+            if (valid && strlen(newCustomers.name) > 0) break;
+            else cout << "Invalid input! Name must contain only letters and spaces.\n";
+        }
+        // Input Email (simple validation: contains '@' and '.')
+        while (true) {
+            cout << "Enter Email: ";
+            cin.getline(newCustomers.email, 50);
+
+            if (strcmp(newCustomers.email, "0") == 0) return;
+
+            string emailStr(newCustomers.email);
+            size_t atPos = emailStr.find('@');
+            size_t dotPos = emailStr.find('.', atPos != string::npos ? atPos : 0);
+
+            if (!emailStr.empty() && atPos != string::npos && dotPos != string::npos) {
+                break;
+            } else {
+                cout << "Invalid input! Email must contain '@' and '.'\n";
+            }
+        }
+       // Input Password (letters, digits, '@', '#', '-', '_' allowed)
+		while (true) {
+		    cout << "Enter new password: ";
+		    cin.getline(newCustomers.password, 50);  // You can adjust size if needed
+		
+		    if (strcmp(newCustomers.password, "0") == 0) return;
+		
+		    bool valid = true;
+		    for (int i = 0; newCustomers.password[i] != '\0'; i++) {
+		        char c = newCustomers.password[i];
+		        if (!isalnum(c) && c != '@' && c != '#' && c != '_' && c != '-') {
+		            valid = false;
+		            break;
+		        }
+		    }
+		
+		    if (!valid || strlen(newCustomers.password) < 4) {
+		        cout << "Invalid password! Must be at least 4 characters and contain only letters, digits, '@', '#', '-', or '_'.\n";
+		        continue;
+		    }
+		
+		    // Confirm password
+		    char confirmPassword[50];
+		    cout << "Confirm password: ";
+		    cin.getline(confirmPassword, 50);
+		
+		    if (strcmp(newCustomers.password, confirmPassword) != 0) {
+		        cout << "Passwords do not match. Please try again.\n";
+		        continue;
+		    }
+		
+		    break; // Valid and matched
+		}
+        // Append to file
+        ofstream outFile("customers.txt", ios::app);
+        if (!outFile) {
+            cout << "Error writing to file!\n";
+            pause();
+            return;
+        }
+
+        outFile << newCustomers.id << ","
+                << newCustomers.name << ","       
+                << newCustomers.email << ","
+                << newCustomers.password << endl;
+
+        outFile.close();
+
+        cout << "\nUser added successfully!\n";
+        pause();
+
+        // Loop again to add another user unless user cancels with 0 at next ID input
+    }
+};
+
+void displayCustomers() {
+    clearScreen();
+    sortCustomers(); 
+    
+    ifstream inFile("customers.txt");  
+    if (!inFile) {
+        cout << "Error opening user file.\n";
+        pause();
+        return;
+    }
+    
+    bool hasData = false;
+    cout << "\n                                  Customer List                              \n";
+    cout << "-------------------------------------------------------------------------------\n";
+    cout << "| ID    | Name                     | Email            | Password                  |\n";
+    cout << "-------------------------------------------------------------------------------\n";
+    
+    Customers c;
+    string line;
+    while (getline(inFile, line)) {
+        stringstream ss(line);
+        string idStr, nameStr, emailStr, passwordStr;
+
+        // Get fields from CSV line
+        getline(ss, idStr, ',');
+        getline(ss, nameStr, ',');
+        getline(ss, emailStr, ',');
+        getline(ss, passwordStr);
+
+        // Convert and store into User struct
+        c.id = stoi(idStr);
+        strncpy(c.name, nameStr.c_str(), sizeof(c.name));
+        c.name[sizeof(c.name) - 1] = '\0';
+
+        strncpy(c.email, emailStr.c_str(), sizeof(c.email));
+        c.email[sizeof(c.email) - 1] = '\0';
+
+        strncpy(c.password, passwordStr.c_str(), sizeof(c.password));
+        c.password[sizeof(c.password) - 1] = '\0';
+
+        // Display formatted output
+        cout << "| " << setw (6) << left <<c.id
+             << "| " << setw(25) << left <<c.name
+             << "| " << setw(16) << left <<c.email
+             << "| " << setw(24) << left <<c.password
+             << "|\n";
+
+        hasData = true;
+    }
+
+    cout << "-------------------------------------------------------------------------------\n";
+
+    if (!hasData) {
+        cout << "No users found.\n";
+    }
+
+    inFile.close();
+    pause();
+}; 
+
+void sortCustomers() { 
+    Customers customers[50];  
+    int count = 0;
+
+    ifstream inFile("customers.txt");
+    if (!inFile) {
+        cout << "Error opening customers.txt for sorting.\n";
+        return;
+    }
+
+    string line;
+    while (getline(inFile, line)) {
+        stringstream ss(line);
+        string idStr, nameStr, emailStr,passwordStr ;
+
+        getline(ss, idStr, ',');
+        getline(ss, nameStr, ',');
+        getline(ss, emailStr, ',');
+        getline(ss, passwordStr);
+
+        customers[count].id = stoi(idStr);
+        strncpy(customers[count].name, nameStr.c_str(), sizeof(customers[count].name));
+        customers[count].name[sizeof(customers[count].name) - 1] = '\0';
+
+        strncpy(customers[count].password, passwordStr.c_str(), sizeof(customers[count].password));
+        customers[count].password[sizeof(customers[count].password) - 1] = '\0';
+
+        strncpy(customers[count].email, emailStr.c_str(), sizeof(customers[count].email));
+        customers[count].email[sizeof(customers[count].email) - 1] = '\0';
+
+        count++;
+    }
+    inFile.close();
+
+    // Bubble sort by ID
+    for (int i = 0; i < count - 1; i++) {
+        for (int j = 0; j < count - 1 - i; j++) {
+            if (customers[j].id > customers[j + 1].id) {
+                Customers temp = customers[j];
+                customers[j] = customers[j + 1];
+                customers[j + 1] = temp;
+            }
+        }
+    }
+
+    // Write sorted users back
+    ofstream outFile("customers.txt");
+    for (int i = 0; i < count; i++) {
+        outFile << customers[i].id << ","
+                << customers[i].name << ","
+                << customers[i].email << ","
+                << customers[i].password << endl;
+    }
+    outFile.close();
+}; 
+
+// ========== Report ==========
+void generateReport(){
+    clearScreen();
+    
+    int totalDrinks = 0;
+    int totalStock = 0;
+    double totalValue = 0.0;
+
+    for (int i = drinkQueue.front; i <= drinkQueue.rear; i++) {
+        Drink& d = drinkQueue.queue[i];
+        totalDrinks++;
+        totalStock += d.stock;
+        totalValue += d.price * d.stock;
+    }
+
+    cout << "\n======= Drink Summary Report =======\n";
+    cout << "Total number of drinks: " << totalDrinks << endl;
+    cout << "Total stock: " << totalStock << endl;
+    cout << "Total value of stock: RM " << fixed << setprecision(2) << totalValue << endl;
+    cout << "\n====================================\n";
+
+     ofstream outFile("generate.txt", ios::app); 
+    if (!outFile) {
+        cout << "Error writing to file!\n";
+        return;
+    }
+
+    outFile << "======= Drink Summary Report =======" << endl;
+    outFile << "Total number of drinks: " << totalDrinks << endl;
+    outFile << "Total stock: " << totalStock << endl;
+    outFile << "Total value of stock: RM " << fixed << setprecision(2) << totalValue << endl;
+    outFile << "====================================" << endl;
+
+    outFile.close();
+
+    pause();
+}; 

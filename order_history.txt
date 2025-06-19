@@ -1,19 +1,8 @@
-0|1001|2025-06-19 00:31:49|76|7|MangoMojito (3) - None ice, Regular sweet - RM 36.00
-LycheeBreeze (4) - Regular ice, Less sweet - RM 40.00
-|
-1001|1002|2025-06-19 00:33:58|24|2|MangoMojito (2) - Regular ice, Regular sweet - RM 24.00
-|
-1001|1003|2025-06-19 00:34:35|24|2|MangoMojito (2) - Regular ice, Regular sweet - RM 24.00
-|
-1001|1001|2025-06-19 00:36:00|36|3|LemonIceTea (3) - Regular ice, Regular sweet - RM 36.00
-|
-1001|1001|2025-06-19 00:42:41|20|2|LycheeBreeze (2) - Regular ice, Regular sweet - RM 20.00
-|
-0|1001|2025-06-19 00:47:42|100|5|TaroMilkTea (5) - Regular ice, Regular sweet - RM 100.00
-|
-0|1001|2025-06-19 01:09:06|60|3|TaroMilkTea (3) - Regular ice, Regular sweet - RM 60.00
-|
-
-
-0|1001|2025-06-19 12:22:16|104|8|LycheeBreeze (3) - Less ice, Less sweet - RM 30.00, BrownSugarPearl (3) - Regular ice, None sweet - RM 54.00, LycheeBreeze (2) - Less ice, Less sweet - RM 20.00
-|
+0|1001|2025-06-19 00:31:49|76|7|MangoMojito (3) - None ice, Regular sweet - RM 36.00, LycheeBreeze (4) - Regular ice, Less sweet - RM 40.00|
+1001|1002|2025-06-19 00:33:58|24|2|MangoMojito (2) - Regular ice, Regular sweet - RM 24.00|
+1001|1003|2025-06-19 00:34:35|24|2|MangoMojito (2) - Regular ice, Regular sweet - RM 24.00|
+1001|1001|2025-06-19 00:36:00|36|3|LemonIceTea (3) - Regular ice, Regular sweet - RM 36.00|
+1001|1001|2025-06-19 00:42:41|20|2|LycheeBreeze (2) - Regular ice, Regular sweet - RM 20.00|
+0|1001|2025-06-19 00:47:42|100|5|TaroMilkTea (5) - Regular ice, Regular sweet - RM 100.00|
+0|1001|2025-06-19 01:09:06|60|3|TaroMilkTea (3) - Regular ice, Regular sweet - RM 60.00|
+0|1001|2025-06-19 12:22:16|104|8|LycheeBreeze (3) - Less ice, Less sweet - RM 30.00, BrownSugarPearl (3) - Regular ice, None sweet - RM 54.00, LycheeBreeze (2) - Less ice, Less sweet - RM 20.00|
