@@ -63,7 +63,7 @@ private:
     
 public:
     OrderQueue() : front(nullptr), rear(nullptr), count(0) {
-        cout << "Order queue initialized\n";
+        cout<<"Order queue initialized\n";
     }
     
     ~OrderQueue() {
@@ -83,7 +83,7 @@ public:
             rear = newNode;
         }
         count++;
-        cout << "Order #" << orderId << " added to queue\n";
+        cout<<"Order #" << orderId << " added to queue\n";
     }
     
     int dequeue() {
@@ -101,7 +101,7 @@ public:
         
         delete temp;
         count--;
-        cout << "Processing order #" << orderId << "\n";
+        cout<<"Processing order #" << orderId << "\n";
         return orderId;
     }
     
@@ -178,8 +178,8 @@ int main() {
         system("cls"); // Clear screen (Windows)
         displayDashboard();
         
-        cout << "\nEnter your choice: ";
-        cin >> choice;
+        cout<<"\nEnter your choice: ";
+        cin>>choice;
         
   			switch(choice) {
             case 1: viewAllProducts(); break;
@@ -191,10 +191,10 @@ int main() {
             case 7: if(currentCustomer) viewOrderHistory(); break;
             case 8: if(currentCustomer) viewProfile(); break;
             case 0: 
-                cout << "Exiting...\n"; 
+                cout<<"Exiting...\n"; 
                 currentCustomer = &customers[0];
                 break;
-            default: cout << "Invalid choice!\n"; pressAnyKey();
+            default: cout<<"Invalid choice!\n"; pressAnyKey();
         }
     } while(choice != 0);
     
@@ -221,7 +221,7 @@ void loadDrinksFromFile() {
         drinkCount++;
     }
     file.close();
-    cout << "Loaded " << drinkCount << " drinks from file\n";
+    cout<<"Loaded " << drinkCount << " drinks from file\n";
 }
 
 void loadCustomers() {
@@ -236,7 +236,7 @@ void loadCustomers() {
 
     ifstream file("customers.txt");
     if (!file) {
-        cout << "No existing customer data. Using guest account only.\n";
+        cout<<"No existing customer data. Using guest account only.\n";
         return;
     }
     
@@ -254,7 +254,7 @@ void loadCustomers() {
     }
     
     file.close();
-    cout << "Loaded " << (customerCount - 1) << " registered customers\n";
+    cout<<"Loaded " << (customerCount - 1) << " registered customers\n";
 }
 
 void saveCustomers() {
@@ -267,38 +267,38 @@ void saveCustomers() {
              << customers[i].password << "\n";
     }
     file.close();
-    cout << "Customer data saved\n";
+    cout<<"Customer data saved\n";
 }
 
 void displayDashboard() {
     system("cls");
 
-    cout << "|----------------------------------------------------------------------------|\n";
-    cout << "|                            MIXUE ICE CREAM & TEA                           |\n";
-    cout << "|                      Ice Cream & Tea Ordering System                       |\n";
-    cout << "|----------------------------------------------------------------------------|\n";
+    cout<<"|----------------------------------------------------------------------------|\n";
+    cout<<"|                            MIXUE ICE CREAM & TEA                           |\n";
+    cout<<"|                      Ice Cream & Tea Ordering System                       |\n";
+    cout<<"|----------------------------------------------------------------------------|\n";
 
     if (currentCustomer) {
-        cout << "\n                            Welcome, " << currentCustomer->name << "!\n\n";
+        cout<<"\n                            Welcome, " << currentCustomer->name << "!\n\n";
     } else {
-        cout << "\n                            Welcome, Guest!\n\n";
+        cout<<"\n                            Welcome, Guest!\n\n";
     };
 
-    cout << "|----------------------------- DASHBOARD ------------------------------------|\n";
-    cout << "|  [1] View All Products           | Browse our full range of drinks         |\n";
-    cout << "|  [2] Start New Order             | Begin selecting your favorite drinks    |\n";
-    cout << "|  [3] View Cart                   | See what you've added to your cart      |\n";
-    cout << "|  [4] Edit Cart                   | Change quantities or remove items       |\n";
-    cout << "|  [5] Payment                     | Proceed to checkout and pay             |\n";
-    cout << "|  [6] Login / Register            | Sign in or create a new account         |\n";
+    cout<<"|----------------------------- DASHBOARD ------------------------------------|\n";
+    cout<<"|  [1] View All Products           | Browse our full range of drinks         |\n";
+    cout<<"|  [2] Start New Order             | Begin selecting your favorite drinks    |\n";
+    cout<<"|  [3] View Cart                   | See what you've added to your cart      |\n";
+    cout<<"|  [4] Edit Cart                   | Change quantities or remove items       |\n";
+    cout<<"|  [5] Payment                     | Proceed to checkout and pay             |\n";
+    cout<<"|  [6] Login / Register            | Sign in or create a new account         |\n";
 
     if (currentCustomer && !currentCustomer->isGuest) {
-        cout << "|  [7] View Order History          | Review your previous purchases          |\n";
-        cout << "|  [8] View Profile                | Manage your account information         |\n";
+        cout<<"|  [7] View Order History          | Review your previous purchases          |\n";
+        cout<<"|  [8] View Profile                | Manage your account information         |\n";
     }
 
-    cout << "|  [0] Exit                        | Close the application                   |\n";
-    cout << "|----------------------------------------------------------------------------|\n";
+    cout<<"|  [0] Exit                        | Close the application                   |\n";
+    cout<<"|----------------------------------------------------------------------------|\n";
 
     // Optional system stats
     printf("  Total Drinks: %-3d   |  Registered Users: %-3d   |  Active Queue: %d\n",
@@ -311,9 +311,9 @@ void viewAllProducts() {
     int choice;
     do {
         system("cls");
-        cout << "================ MIXUE PRODUCT MENU ================\n";
-        cout << "ID  | Name                    | Category   | Price  | Calories\n";
-        cout << "----+-------------------------+------------+--------+----------\n";
+        cout<<"================ MIXUE PRODUCT MENU ================\n";
+        cout<<"ID  | Name                    | Category   | Price  | Calories\n";
+        cout<<"----+-------------------------+------------+--------+----------\n";
 
         for (int i = 0; i < drinkCount; i++) {
             printf("%-4d| %-24s| %-11s| RM%-5.2f| %-9d\n", 
@@ -324,16 +324,16 @@ void viewAllProducts() {
                    drinkMenu[i].calories);
         }
 
-        cout << "\n================== OPTIONS ==================\n";
-        cout << "1. Sort by Price\n";
-        cout << "2. Sort by Calories\n";
-        cout << "3. Filter by Category\n";
-        cout << "4. Search by Name\n";
-        cout << "0. Back to Dashboard\n";
-        cout << "=============================================\n";
-        cout << "Enter your choice: ";
-        cin >> choice;
-        cout << "\n";
+        cout<<"\n================== OPTIONS ==================\n";
+        cout<<"1. Sort by Price\n";
+        cout<<"2. Sort by Calories\n";
+        cout<<"3. Filter by Category\n";
+        cout<<"4. Search by Name\n";
+        cout<<"0. Back to Dashboard\n";
+        cout<<"=============================================\n";
+        cout<<"Enter your choice: ";
+        cin>>choice;
+        cout<<"\n";
 
         switch (choice) {
             case 1:
@@ -347,20 +347,20 @@ void viewAllProducts() {
             case 3: {
                 char categories[3][20] = {"Beverage", "Juice", "Tea"};
 
-                cout << "Available categories:\n";
+                cout<<"Available categories:\n";
                 for (int i = 0; i < 3; i++) {
-                    cout << i + 1 << ". " << categories[i] << "\n";
+                    cout<<i + 1 << ". " << categories[i] << "\n";
                 }
 
                 int catChoice;
-                cout << "Select category (1-3): ";
-                cin >> catChoice;
+                cout<<"Select category (1-3): ";
+                cin>>catChoice;
 
                 if (catChoice >= 1 && catChoice <= 3) {
                     system("cls");
-                    cout << "========== FILTER: " << categories[catChoice - 1] << " ==========\n";
-                    cout << "ID  | Name                    | Category   | Price  | Calories\n";
-                    cout << "----+-------------------------+------------+--------+----------\n";
+                    cout<<"========== FILTER: " << categories[catChoice - 1] << " ==========\n";
+                    cout<<"ID  | Name                    | Category   | Price  | Calories\n";
+                    cout<<"----+-------------------------+------------+--------+----------\n";
 
                     for (int i = 0; i < drinkCount; i++) {
                         if (strcmp(drinkMenu[i].category, categories[catChoice - 1]) == 0) {
@@ -373,7 +373,7 @@ void viewAllProducts() {
                         }
                     }
                 } else {
-                    cout << "Invalid category choice!\n";
+                    cout<<"Invalid category choice!\n";
                 }
 
                 pressAnyKey();
@@ -382,17 +382,17 @@ void viewAllProducts() {
 
             case 4: {
                 system("cls");
-                cout << "===== SEARCH BY NAME =====\n";
-                cout << "Enter product name to search: ";
+                cout<<"===== SEARCH BY NAME =====\n";
+                cout<<"Enter product name to search: ";
                 cin.ignore();
                 char searchName[50];
                 cin.getline(searchName, 50);
 
                 bool found = false;
 
-                cout << "\nSearch Results:\n";
-                cout << "ID  | Name                    | Category   | Price  | Calories\n";
-                cout << "----+-------------------------+------------+--------+----------\n";
+                cout<<"\nSearch Results:\n";
+                cout<<"ID  | Name                    | Category   | Price  | Calories\n";
+                cout<<"----+-------------------------+------------+--------+----------\n";
 
                 for (int i = 0; i < drinkCount; i++) {
                     char nameLower[50], searchLower[50];
@@ -417,7 +417,7 @@ void viewAllProducts() {
                 }
 
                 if (!found) {
-                    cout << "No matching products found.\n";
+                    cout<<"No matching products found.\n";
                 }
 
                 pressAnyKey();
@@ -428,7 +428,7 @@ void viewAllProducts() {
                 break;
 
             default:
-                cout << "Invalid choice!\n";
+                cout<<"Invalid choice!\n";
                 pressAnyKey();
         }
 
@@ -441,9 +441,9 @@ void startOrder() {
 
     do {
         system("cls");
-        cout << "========== MIXUE DRINK MENU ==========\n";
-        cout << "ID  | Name                    | Category   | Price  | Calories\n";
-        cout << "----+-------------------------+------------+--------+----------\n";
+        cout<<"========== MIXUE DRINK MENU ==========\n";
+        cout<<"ID  | Name                    | Category   | Price  | Calories\n";
+        cout<<"----+-------------------------+------------+--------+----------\n";
 
         for (int i = 0; i < drinkCount; i++) {
             printf("%-4d| %-24s| %-11s| RM%-5.2f| %-9d\n",
@@ -454,11 +454,11 @@ void startOrder() {
                    drinkMenu[i].calories);
         }
 
-        cout << "\nEnter Drink ID to order (1-" << drinkCount << "): ";
-        cin >> drinkChoice;
+        cout<<"\nEnter Drink ID to order (1-" << drinkCount << "): ";
+        cin>>drinkChoice;
 
         if (drinkChoice < 1 || drinkChoice > drinkCount) {
-            cout << "Invalid ID!\n";
+            cout<<"Invalid ID!\n";
             pressAnyKey();
             return;
         }
@@ -467,17 +467,17 @@ void startOrder() {
 
         // Set quantity
         int qty;
-        cout << "\nEnter quantity (1-" << MAX_QUANTITY << "): ";
-        cin >> qty;
+        cout<<"\nEnter quantity (1-" << MAX_QUANTITY << "): ";
+        cin>>qty;
         if (qty < 1 || qty > MAX_QUANTITY) qty = 1;
         selected.quantity = qty;
 
         // Set ice level
-        cout << "\nChoose Ice Level:\n";
-        cout << "1. Regular\n2. Less\n3. None\n";
+        cout<<"\nChoose Ice Level:\n";
+        cout<<"1. Regular\n2. Less\n3. None\n";
         int ice;
-        cout << "Enter choice: ";
-        cin >> ice;
+        cout<<"Enter choice: ";
+        cin>>ice;
         switch (ice) {
             case 2: strcpy(selected.iceLevel, "Less"); break;
             case 3: strcpy(selected.iceLevel, "None"); break;
@@ -486,11 +486,11 @@ void startOrder() {
         selected.iceChoice = ice;
 
         // Set sweetness
-        cout << "\nChoose Sweetness:\n";
-        cout << "1. Regular\n2. Less\n3. None\n";
+        cout<<"\nChoose Sweetness:\n";
+        cout<<"1. Regular\n2. Less\n3. None\n";
         int sweet;
-        cout << "Enter choice: ";
-        cin >> sweet;
+        cout<<"Enter choice: ";
+        cin>>sweet;
         switch (sweet) {
             case 2: strcpy(selected.sweetness, "Less"); break;
             case 3: strcpy(selected.sweetness, "None"); break;
@@ -500,10 +500,10 @@ void startOrder() {
 
         // Add to cart
         addToCart(selected);
-        cout << "Item added to cart!\n";
+        cout<<"Item added to cart!\n";
 
-        cout << "\nOrder another item? (y/n): ";
-        cin >> cont;
+        cout<<"\nOrder another item? (y/n): ";
+        cin>>cont;
     } while (tolower(cont) == 'y');
   
    if (tolower(cont) == 'n') {
@@ -543,15 +543,15 @@ void addToCart(Drink drink) {
 
 bool viewCart() {
     system("cls");
-    cout << "+--------------------------------------------------------------------------+\n";
-    cout << "|                             YOUR CART                                    |\n";
-    cout << "+--------------------------------------------------------------------------+\n";
+    cout<<"+--------------------------------------------------------------------------+\n";
+    cout<<"|                             YOUR CART                                    |\n";
+    cout<<"+--------------------------------------------------------------------------+\n";
 
     CartItem* cart = currentCustomer ? currentCustomer->cart : customers[0].cart;
     if (!cart) {
-        cout << "|                                                                          |\n";
-        cout << "| Your cart is currently empty.                                            |\n";
-        cout << "+--------------------------------------------------------------------------+\n";
+        cout<<"|                                                                          |\n";
+        cout<<"| Your cart is currently empty.                                            |\n";
+        cout<<"+--------------------------------------------------------------------------+\n";
         pressAnyKey();
         displayDashboard();
         return true;
@@ -561,10 +561,10 @@ bool viewCart() {
     float total = 0;
     CartItem* current = cart;
 
-    cout << "\n";
-    cout << "+-----+-------------------------------+------+-----------------------------+\n";
-    cout << "| No  | Drink Name                    | Qty  | Customization               |\n";
-    cout << "+-----+-------------------------------+------+-----------------------------+\n";
+    cout<<"\n";
+    cout<<"+-----+-------------------------------+------+-----------------------------+\n";
+    cout<<"| No  | Drink Name                    | Qty  | Customization               |\n";
+    cout<<"+-----+-------------------------------+------+-----------------------------+\n";
 
     while (current) {
         printf("| %-3d | %-29s | %-4d | Ice: %-7s Sweet: %-7s |\n",
@@ -578,28 +578,28 @@ bool viewCart() {
         index++;
     }
 
-    cout << "+-----+-------------------------------+------+-----------------------------+\n";
+    cout<<"+-----+-------------------------------+------+-----------------------------+\n";
 
 	char formattedTotal[50];
 	snprintf(formattedTotal, sizeof(formattedTotal), "%.2f", total);
 	string totalLine = "Total Amount: RM " + string(formattedTotal); 
 	
     printf("| %-71s  |\n", totalLine.c_str());
-    cout << "+--------------------------------------------------------------------------+\n";
+    cout<<"+--------------------------------------------------------------------------+\n";
 
 
-    cout << "\n";
-    cout << "+----------------------+\n";
-    cout << "| 1. Proceed to Payment|\n";
-    cout << "| 2. Edit Cart         |\n";
-    cout << "| 3. Remove Item       |\n";
-    cout << "| 4. Clear Cart        |\n";
-    cout << "| 0. Back              |\n";
-    cout << "+----------------------+\n";
+    cout<<"\n";
+    cout<<"+----------------------+\n";
+    cout<<"| 1. Proceed to Payment|\n";
+    cout<<"| 2. Edit Cart         |\n";
+    cout<<"| 3. Remove Item       |\n";
+    cout<<"| 4. Clear Cart        |\n";
+    cout<<"| 0. Back              |\n";
+    cout<<"+----------------------+\n";
 
     int choice;
-    cout << "\nEnter choice: ";
-    cin >> choice;
+    cout<<"\nEnter choice: ";
+    cin>>choice;
 
     switch(choice) {
         case 0: return false;
@@ -607,14 +607,14 @@ bool viewCart() {
         case 2: editCart(); break;
         case 3: {
             int itemIndex;
-            cout << "Enter item number to remove: ";
-            cin >> itemIndex;
+            cout<<"Enter item number to remove: ";
+            cin>>itemIndex;
             removeFromCart(itemIndex);
             break;
         }
         case 4: clearCart(); break;
         default:
-            cout << "Invalid choice.\n";
+            cout<<"Invalid choice.\n";
             pressAnyKey();
             break;
     }
@@ -643,7 +643,7 @@ void removeFromCart(int itemIndex) {
             delete temp;
         }
     }
-    cout << "Item removed from cart!\n";
+    cout<<"Item removed from cart!\n";
     pressAnyKey();
     viewCart();
 }
@@ -655,20 +655,20 @@ void clearCart() {
         *cart = (*cart)->next;
         delete temp;
     }
-    cout << "Cart cleared!\n";
+    cout<<"Cart cleared!\n";
     pressAnyKey();
 }
 
 void processPayment() {
     system("cls");
-    cout << "+--------------------------------------------------+\n";
-    cout << "|                    PAYMENT                       |\n";
-    cout << "+--------------------------------------------------+\n";
+    cout<<"+--------------------------------------------------+\n";
+    cout<<"|                    PAYMENT                       |\n";
+    cout<<"+--------------------------------------------------+\n";
     
     CartItem* cart = currentCustomer ? currentCustomer->cart : customers[0].cart;
     if (!cart) {
-        cout << "| Your cart is empty!                              |\n";
-        cout << "+--------------------------------------------------+\n";
+        cout<<"| Your cart is empty!                              |\n";
+        cout<<"+--------------------------------------------------+\n";
         pressAnyKey();
         displayDashboard();
         return;
@@ -680,26 +680,26 @@ void processPayment() {
    // Display cart items
 CartItem* current = cart;
 int index = 1;
-cout << "\n+--------------------------------------------------+\n";
-cout << "|                  CART ITEMS                      |\n";
-cout << "+--------------------------------------------------+\n";
+cout<<"\n+--------------------------------------------------+\n";
+cout<<"|                  CART ITEMS                      |\n";
+cout<<"+--------------------------------------------------+\n";
 while (current) {
-    cout << "| " << index++ << ". " << current->drink.name 
+    cout<<"| " << index++ << ". " << current->drink.name 
          << " (" << current->drink.quantity << "x)"
          << " - RM " << current->drink.price * current->drink.quantity << "\n";
     current = current->next;
 }
-cout << "+--------------------------------------------------+\n";
+cout<<"+--------------------------------------------------+\n";
 
-cout << "| SUBTOTAL: RM " << total << "\n";
-cout << "+--------------------------------------------------+\n";
+cout<<"| SUBTOTAL: RM " << total << "\n";
+cout<<"+--------------------------------------------------+\n";
 
     
     // Discount code (only for registered users)
     if (currentCustomer) {
         char discountCode[20];
-        cout << " Enter discount code (or 0 to skip): ";
-        cin >> discountCode;
+        cout<<" Enter discount code (or 0 to skip): ";
+        cin>>discountCode;
         
         if (strcmp(discountCode, "0") != 0) {
             // Check discount code (simplified)
@@ -711,37 +711,37 @@ cout << "+--------------------------------------------------+\n";
                 
                 if (strcmp(discountCode, validCode) == 0) {
                     discount = total * (discountPercent / 100);
-                    cout << "| Discount applied: RM " << discount << "\n";
+                    cout<<"| Discount applied: RM " << discount << "\n";
                 } else {
-                    cout << "| Invalid discount code                            |\n";
+                    cout<<"| Invalid discount code                            |\n";
                 }
                 discountFile.close();
             } else {
-                cout << "| No discount codes available                       |\n";
+                cout<<"| No discount codes available                       |\n";
             }
         }
     }
     
     float finalTotal = total - discount;
-    cout << "| FINAL TOTAL: RM " << finalTotal << "\n";
-    cout << "+--------------------------------------------------+\n\n";
+    cout<<"| FINAL TOTAL: RM " << finalTotal << "\n";
+    cout<<"+--------------------------------------------------+\n\n";
     
-    cout << "+-------------------- OPTIONS ---------------------+\n";
-    cout << "| 1. Confirm Payment                               |\n";
-    cout << "| 2. Edit Cart                                     |\n";
-    cout << "| 0. Cancel                                        |\n";
-    cout << "+--------------------------------------------------+\n";
+    cout<<"+-------------------- OPTIONS ---------------------+\n";
+    cout<<"| 1. Confirm Payment                               |\n";
+    cout<<"| 2. Edit Cart                                     |\n";
+    cout<<"| 0. Cancel                                        |\n";
+    cout<<"+--------------------------------------------------+\n";
     
     int choice;
-    cout << "Enter choice: ";
-    cin >> choice;
+    cout<<"Enter choice: ";
+    cin>>choice;
     
     if (choice == 1) {
-        cout << "Processing payment...\n";
+        cout<<"Processing payment...\n";
         
         // Simulate processing time
         for (int i = 3; i > 0; i--) {
-            cout << i << "... ";
+            cout<<i << "... ";
             time_t start = time(0);
             while (time(0) - start < 1) {} // 1 second delay
         }
@@ -751,21 +751,21 @@ cout << "+--------------------------------------------------+\n";
         orderQueue.enqueue(orderId);
         int processedId = orderQueue.dequeue();
         
-cout << "\n\n+=================================================+\n";
-cout << "|               ORDER COMPLETE                    |\n";
-cout << "+=================================================+\n";
-cout << "| Order ID: #" << processedId << "\n";
-cout << "| Total   : RM " << finalTotal << "\n";
-cout << "| Items   :\n";
+cout<<"\n\n+=================================================+\n";
+cout<<"|               ORDER COMPLETE                    |\n";
+cout<<"+=================================================+\n";
+cout<<"| Order ID: #" << processedId << "\n";
+cout<<"| Total   : RM " << finalTotal << "\n";
+cout<<"| Items   :\n";
 
         
         current = cart;
         while (current) {
-            cout << "| - " << current->drink.name 
+            cout<<"| - " << current->drink.name 
                  << " (" << current->drink.quantity << "x)\n";
             current = current->next;
         }
-        cout << "+--------------------------------------------------+\n";
+        cout<<"+--------------------------------------------------+\n";
         
         // Save order to history (for ALL users)
         saveOrderToHistory(currentCustomer ? currentCustomer : &customers[0], finalTotal);
@@ -836,7 +836,7 @@ void saveOrderToHistory(Customer* customer, float total) {
         historyFile.close();
         
         // Also print a simple confirmation message
-        cout << "Order #" << newOrder->orderId << " saved to history.\n";
+        cout<<"Order #" << newOrder->orderId << " saved to history.\n";
     } else {
         cerr << "Error: Unable to open order_history.txt for writing!\n";
     }
@@ -844,44 +844,44 @@ void saveOrderToHistory(Customer* customer, float total) {
 
 void loginOrRegister() {
     system("cls");
-    cout << "+=============== ACCOUNT ===============+\n";
-    cout << "| 1. Login                             |\n";
-    cout << "| 2. Register                          |\n";
-    cout << "| 0. Back                              |\n";
-    cout << "+--------------------------------------+\n";
+    cout<<"+=============== ACCOUNT ===============+\n";
+    cout<<"| 1. Login                             |\n";
+    cout<<"| 2. Register                          |\n";
+    cout<<"| 0. Back                              |\n";
+    cout<<"+--------------------------------------+\n";
     
     int choice;
-    cout << "| Enter choice: ";
-    cin >> choice;
-    cout << "+--------------------------------------+\n";
+    cout<<"| Enter choice: ";
+    cin>>choice;
+    cout<<"+--------------------------------------+\n";
     
     if (choice == 1) {
         char email[100], password[50];
-        cout << "| Email: ";
-        cin >> email;
-        cout << "| Password: ";
-        cin >> password;
-        cout << "+--------------------------------------+\n";
+        cout<<"| Email: ";
+        cin>>email;
+        cout<<"| Password: ";
+        cin>>password;
+        cout<<"+--------------------------------------+\n";
         
         for (int i = 0; i < customerCount; i++) {
             if (strcmp(customers[i].email, email) == 0 && 
                 strcmp(customers[i].password, password) == 0) {
                 currentCustomer = &customers[i];
-                cout << "| Login successful! Welcome " << customers[i].name << "!\n";
-                cout << "+--------------------------------------+\n";
+                cout<<"| Login successful! Welcome " << customers[i].name << "!\n";
+                cout<<"+--------------------------------------+\n";
                 pressAnyKey();
                 return;
             }
         }
-        cout << "| Invalid email or password!            |\n";
-        cout << "+--------------------------------------+\n";
+        cout<<"| Invalid email or password!            |\n";
+        cout<<"+--------------------------------------+\n";
         pressAnyKey();
     }
     else if (choice == 2) {
         if (customerCount >= MAX_CUSTOMERS) {
-            cout << "+--------------------------------------+\n";
-            cout << "| Cannot register more users!          |\n";
-            cout << "+--------------------------------------+\n";
+            cout<<"+--------------------------------------+\n";
+            cout<<"| Cannot register more users!          |\n";
+            cout<<"+--------------------------------------+\n";
             pressAnyKey();
             return;
         }
@@ -891,17 +891,17 @@ void loginOrRegister() {
         newCustomer.cart = nullptr;
         newCustomer.orderHistory = nullptr;
         
-        cout << "| Name: ";
+        cout<<"| Name: ";
         cin.ignore();
         cin.getline(newCustomer.name, 50);
-        cout << "+--------------------------------------+\n";
+        cout<<"+--------------------------------------+\n";
         
         // Email validation (original code unchanged)
         bool validEmail = false;
         do {
-            cout << "| Email (must end with @gmail.com etc): ";
+            cout<<"| Email (must end with @gmail.com etc): ";
             cin.getline(newCustomer.email, 100);
-            cout << "+--------------------------------------+\n";
+            cout<<"+--------------------------------------+\n";
             
             string emailStr(newCustomer.email);
             size_t atPos = emailStr.find('@');
@@ -914,8 +914,8 @@ void loginOrRegister() {
                     
                     for (int i = 0; i < customerCount; i++) {
                         if (strcmp(customers[i].email, newCustomer.email) == 0) {
-                            cout << "| This email is already registered!    |\n";
-                            cout << "+--------------------------------------+\n";
+                            cout<<"| This email is already registered!    |\n";
+                            cout<<"+--------------------------------------+\n";
                             validEmail = false;
                             break;
                         }
@@ -924,24 +924,24 @@ void loginOrRegister() {
             }
             
             if (!validEmail) {
-                cout << "| Invalid email format or domain!      |\n";
-                cout << "+--------------------------------------+\n";
+                cout<<"| Invalid email format or domain!      |\n";
+                cout<<"+--------------------------------------+\n";
             }
         } while (!validEmail);
         
         // Password validation (original code unchanged)
         bool validPassword = false;
         do {
-            cout << "| Password (6-10 characters): ";
+            cout<<"| Password (6-10 characters): ";
             cin.getline(newCustomer.password, 50);
-            cout << "+--------------------------------------+\n";
+            cout<<"+--------------------------------------+\n";
             
             int passLength = strlen(newCustomer.password);
             if (passLength >= 6 && passLength <= 10) {
                 validPassword = true;
             } else {
-                cout << "| Password must be 6-10 characters!   |\n";
-                cout << "+--------------------------------------+\n";
+                cout<<"| Password must be 6-10 characters!   |\n";
+                cout<<"+--------------------------------------+\n";
             }
         } while (!validPassword);
         
@@ -956,32 +956,32 @@ void loginOrRegister() {
         customerFile << "Email: " << newCustomer.email << "\n";
         customerFile.close();
         
-        cout << "| Registration successful!           |\n";
-        cout << "+--------------------------------------+\n";
+        cout<<"| Registration successful!           |\n";
+        cout<<"+--------------------------------------+\n";
         pressAnyKey();
     }
 }
 
 void viewOrderHistory() {
     system("cls");
-    cout << "+=========== ORDER HISTORY ===========+\n";
+    cout<<"+=========== ORDER HISTORY ===========+\n";
     
     if (!currentCustomer->orderHistory) {
-        cout << "+-----------------------------------+\n";
-        cout << "| No order history found!           |\n";
-        cout << "+-----------------------------------+\n";
+        cout<<"+-----------------------------------+\n";
+        cout<<"| No order history found!           |\n";
+        cout<<"+-----------------------------------+\n";
         pressAnyKey();
         return;
     }
     
     OrderHistory* current = currentCustomer->orderHistory;
 while (current) {
-    cout << "+-----------------------------------+\n";
-    cout << "| Order #" << current->orderId << "\n";
-    cout << "| Date: " << ctime(&(current->orderDate));
-    cout << "| Items: " << current->itemCount << "\n";
-    cout << "| Total: RM " << current->totalAmount << "\n";
-    cout << "+-----------------------------------+\n";
+    cout<<"+-----------------------------------+\n";
+    cout<<"| Order #" << current->orderId << "\n";
+    cout<<"| Date: " << ctime(&(current->orderDate));
+    cout<<"| Items: " << current->itemCount << "\n";
+    cout<<"| Total: RM " << current->totalAmount << "\n";
+    cout<<"+-----------------------------------+\n";
     current = current->next;
 }
 pressAnyKey();
@@ -989,45 +989,45 @@ pressAnyKey();
 
 void viewProfile() {
     if (!currentCustomer || currentCustomer->isGuest) {
-        cout << "+-------------------------------------+\n";
-        cout << "| Guest session - no profile info     |\n";
-        cout << "+-------------------------------------+\n";
+        cout<<"+-------------------------------------+\n";
+        cout<<"| Guest session - no profile info     |\n";
+        cout<<"+-------------------------------------+\n";
         pressAnyKey();
         return;
     }
     
     system("cls");
-    cout << "+============= YOUR PROFILE =============+\n";
-    cout << "| Name: " << currentCustomer->name << "\n";
-    cout << "| Email: " << currentCustomer->email << "\n";
-    cout << "| Member since: 2025\n";
-    cout << "+-------------------------------------+\n";
-    cout << "| 1. Change Name                     |\n";
-    cout << "| 2. Change Password                 |\n";
-    cout << "| 0. Back                            |\n";
-    cout << "+-------------------------------------+\n";
+    cout<<"+============= YOUR PROFILE =============+\n";
+    cout<<"| Name: " << currentCustomer->name << "\n";
+    cout<<"| Email: " << currentCustomer->email << "\n";
+    cout<<"| Member since: 2025\n";
+    cout<<"+-------------------------------------+\n";
+    cout<<"| 1. Change Name                     |\n";
+    cout<<"| 2. Change Password                 |\n";
+    cout<<"| 0. Back                            |\n";
+    cout<<"+-------------------------------------+\n";
     
     int choice;
-    cout << "| Enter choice: ";
-    cin >> choice;
+    cout<<"| Enter choice: ";
+    cin>>choice;
     
     if (choice == 1) {
-        cout << "| New name: ";
+        cout<<"| New name: ";
         cin.ignore();
         cin.getline(currentCustomer->name, 50);
-        cout << "+-----------------------------+\n";
-        cout << "| Name updated!              |\n";
-        cout << "+-----------------------------+\n";
+        cout<<"+-----------------------------+\n";
+        cout<<"| Name updated!              |\n";
+        cout<<"+-----------------------------+\n";
         pressAnyKey();
     }
     else if (choice == 2) {
         char newPassword[50];
-        cout << "| New password: ";
-        cin >> newPassword;
+        cout<<"| New password: ";
+        cin>>newPassword;
         strcpy(currentCustomer->password, newPassword);
-        cout << "+-----------------------------+\n";
-        cout << "| Password updated!          |\n";
-        cout << "+-----------------------------+\n";
+        cout<<"+-----------------------------+\n";
+        cout<<"| Password updated!          |\n";
+        cout<<"+-----------------------------+\n";
         pressAnyKey();
     }
 }
@@ -1056,7 +1056,7 @@ void bubbleSortDrinks(int sortBy) {
         }
         if (!swapped) break;
     }
-    cout << "Sort completed!\n";
+    cout<<"Sort completed!\n";
     pressAnyKey();
 }
 
@@ -1085,9 +1085,9 @@ int binarySearchDrink(int id) {
 
 // ========== Helper Functions ==========
 void displayDrink(Drink d) {
-    cout << d.name << " (" << d.category << ")";
-    cout << "   Price: RM " << d.price;
-    cout << "   Calories: " << d.calories << "\n\n";
+    cout<<d.name << " (" << d.category << ")";
+    cout<<"   Price: RM " << d.price;
+    cout<<"   Calories: " << d.calories << "\n\n";
 }
 
 float calculateCartTotal() {
@@ -1103,7 +1103,7 @@ float calculateCartTotal() {
 }
 
 void pressAnyKey() {
-    cout << "\nPress any key to continue...";
+    cout<<"\nPress any key to continue...";
     getch(); // Windows-specific, use cin.get() for cross-platfoRM 
 }
 
@@ -1118,7 +1118,7 @@ public:
 };
 
 void displaySystemInfo(CustomerSystem sys) {
-    cout << "Mixue Ordering System (ID: " << sys.systemId << ")\n";
+    cout<<"Mixue Ordering System (ID: " << sys.systemId << ")\n";
 }
 
 void editCart() {
@@ -1126,14 +1126,14 @@ void editCart() {
 
     do {
         system("cls");
-        cout << "+=================================================+\n";
-        cout << "|                  EDIT YOUR CART                 |\n";
-        cout << "+=================================================+\n";
+        cout<<"+=================================================+\n";
+        cout<<"|                  EDIT YOUR CART                 |\n";
+        cout<<"+=================================================+\n";
 
         CartItem* cart = currentCustomer ? currentCustomer->cart : customers[0].cart;
         if (!cart) {
-            cout << "| Your cart is empty!                             |\n";
-            cout << "+=================================================+\n";
+            cout<<"| Your cart is empty!                             |\n";
+            cout<<"+=================================================+\n";
             pressAnyKey();
             displayDashboard();
             return;
@@ -1141,9 +1141,9 @@ void editCart() {
 
         int index = 1;
         CartItem* current = cart;
-		cout << "\n+-----+-------------------------------+----------+------------+\n";
-		cout << "| No. | Item                          | Quantity | Total (RM) |\n";
-		cout << "+-----+-------------------------------+----------+------------+\n";
+		cout<<"\n+-----+-------------------------------+----------+------------+\n";
+		cout<<"| No. | Item                          | Quantity | Total (RM) |\n";
+		cout<<"+-----+-------------------------------+----------+------------+\n";
         while (current) {
         printf("| %-3d | %-29s | %-8d | %-10.2f |\n",
            index++,
@@ -1152,11 +1152,11 @@ void editCart() {
            current->drink.price * current->drink.quantity);
    		   current = current->next;
 			}
-		cout << "+-----+-------------------------------+----------+------------+\n";
+		cout<<"+-----+-------------------------------+----------+------------+\n";
 
-cout << "\nEnter item number to edit (0 to return): ";
+cout<<"\nEnter item number to edit (0 to return): ";
 int choice;
-cin >> choice;
+cin>>choice;
 
         if (choice == 0) {
             viewCart();
@@ -1171,30 +1171,30 @@ cin >> choice;
 
             if (current) {
                 system("cls");
-                cout << "+=====================================+\n";
-                cout << "| Editing: " << current->drink.name << "\n";
-                cout << "+=====================================+\n";
-                cout << "1. Change quantity\n";
-                cout << "2. Change customization\n";
-                cout << "3. Remove item\n";
-                cout << "0. Back to cart\n";
-                cout << "Enter your choice: ";
+                cout<<"+=====================================+\n";
+                cout<<"| Editing: " << current->drink.name << "\n";
+                cout<<"+=====================================+\n";
+                cout<<"1. Change quantity\n";
+                cout<<"2. Change customization\n";
+                cout<<"3. Remove item\n";
+                cout<<"0. Back to cart\n";
+                cout<<"Enter your choice: ";
                 int editChoice;
-                cin >> editChoice;
+                cin>>editChoice;
 
                 switch (editChoice) {
                     case 1: {
                         int newQty;
-                        cout << "Enter new quantity (0-" << MAX_QUANTITY << "): ";
-                        cin >> newQty;
+                        cout<<"Enter new quantity (0-" << MAX_QUANTITY << "): ";
+                        cin>>newQty;
                         if (newQty > 0 && newQty <= MAX_QUANTITY) {
                             current->drink.quantity = newQty;
-                            cout << "Quantity updated!" << endl;
+                            cout<<"Quantity updated!" << endl;
                         } else if (newQty == 0) {
                             removeFromCart(choice);
-                            cout << "Item removed!" << endl;
+                            cout<<"Item removed!" << endl;
                         } else {
-                            cout << "Invalid quantity! Max is " << MAX_QUANTITY << endl;
+                            cout<<"Invalid quantity! Max is " << MAX_QUANTITY << endl;
                         }
                         pressAnyKey();
                         break;
@@ -1203,55 +1203,55 @@ cin >> choice;
                         int customChoice;
                         do {
                             system("cls");
-                            cout << "+==============================+\n";
-                            cout << "| Customization Options        |\n";
-                            cout << "+==============================+\n";
-                            cout << "Current: " << current->drink.iceLevel << " ice, "
+                            cout<<"+==============================+\n";
+                            cout<<"| Customization Options        |\n";
+                            cout<<"+==============================+\n";
+                            cout<<"Current: " << current->drink.iceLevel << " ice, "
                                  << current->drink.sweetness << " sweet\n\n";
-                            cout << "1. Change ice level\n";
-                            cout << "2. Change sweetness\n";
-                            cout << "0. Finish customization\n";
-                            cout << "Enter choice: ";
-                            cin >> customChoice;
+                            cout<<"1. Change ice level\n";
+                            cout<<"2. Change sweetness\n";
+                            cout<<"0. Finish customization\n";
+                            cout<<"Enter choice: ";
+                            cin>>customChoice;
 
                             if (customChoice == 1) {
-                                cout << "\n1. Regular Ice\n2. Less Ice\n3. No Ice\n";
+                                cout<<"\n1. Regular Ice\n2. Less Ice\n3. No Ice\n";
                                 int iceChoice;
-                                cout << "Enter choice: ";
-                                cin >> iceChoice;
+                                cout<<"Enter choice: ";
+                                cin>>iceChoice;
                                 if (iceChoice >= 1 && iceChoice <= 3) {
                                     const char* levels[] = {"Regular", "Less", "None"};
                                     strcpy(current->drink.iceLevel, levels[iceChoice - 1]);
                                 }
                             } else if (customChoice == 2) {
-                                cout << "\n1. Regular Sweet\n2. Less Sweet\n3. No Sugar\n";
+                                cout<<"\n1. Regular Sweet\n2. Less Sweet\n3. No Sugar\n";
                                 int sweetChoice;
-                                cout << "Enter choice: ";
-                                cin >> sweetChoice;
+                                cout<<"Enter choice: ";
+                                cin>>sweetChoice;
                                 if (sweetChoice >= 1 && sweetChoice <= 3) {
                                     const char* levels[] = {"Regular", "Less", "None"};
                                     strcpy(current->drink.sweetness, levels[sweetChoice - 1]);
                                 }
                             }
                         } while (customChoice != 0);
-                        cout << "Customization updated!" << endl;
+                        cout<<"Customization updated!" << endl;
                         break;
                     }
                     case 3: {
                         removeFromCart(choice);
-                        cout << "Item removed!" << endl;
+                        cout<<"Item removed!" << endl;
                         pressAnyKey();
                         break;
                     }
                     case 0:
                         break;
                     default:
-                        cout << "Invalid choice!" << endl;
+                        cout<<"Invalid choice!" << endl;
                         pressAnyKey();
                 }
             }
         } else {
-            cout << "Invalid selection!" << endl;
+            cout<<"Invalid selection!" << endl;
             pressAnyKey();
         }
 
