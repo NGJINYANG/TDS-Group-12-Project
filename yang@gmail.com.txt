@@ -1,0 +1,3 @@
+Customer ID: 1003
+Name: Yang
+Email: yang@gmail.com
