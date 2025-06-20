@@ -1,0 +1,10 @@
+1001,John Tan,jojo.tan@gmai.com,pass1234
+1002,Alice Wong,alice.wong@example.com,alice@202
+1003,Michael Lim,michael.lim@example.com,MiL#456
+1004,Sarah Lee,sarah.lee@example.com,slee_789
+1005,Daniel Ng,daniel.ng@example.com,D@niel321
+1006,Emily Chan,emily.chan@example.com,eChan9876
+1007,Jason Goh,jason.goh@example.com,jgoh#888
+1008,Rachel Low,rachel.low@example.com,r@chel135
+1009,Brandon Yap,brandon.yap@example.com,Br@ndo007
+1010,Chloe Teo,chloe.teo@example.com,chloeteo99
