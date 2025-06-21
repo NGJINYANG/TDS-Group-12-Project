@@ -3,22 +3,23 @@
 #include <cstring>
 #include <ctime>
 #include <cctype>
-#include <conio.h> // For getch() on Windows
+#include <conio.h> 
 #include <stdexcept>
 #include <set>
 #include <string>
+#include <windows.h>//for sleep function
 
 using namespace std;
 
-// ========== Data Structures ==========
+//data structures
 struct Drink {
     int id;
     char name[50];
     char category[20];
     float price;
     int calories;
-    char iceLevel[20];   // "Regular", "Less", "None"
-    char sweetness[20];  // "Regular", "Less", "None"
+    char iceLevel[20];
+    char sweetness[20]; 
     int iceChoice;   
     int sweetChoice;
     int quantity;
@@ -30,7 +31,7 @@ struct CartItem {
 };
 
 struct OrderHistory {
-    int orderId;
+    int orderId; 
     time_t orderDate;
     float totalAmount;
     int itemCount;
@@ -47,7 +48,7 @@ struct Customer {
     bool isGuest;        
 };
 
-// ========== Queue Implementation ==========
+//queue implementation 
 class OrderQueue {
 private:
     struct QueueNode {
@@ -114,7 +115,7 @@ public:
     }
 };
 
-// ========== Global Variables ==========
+//global variables 
 const int MAX_QUANTITY = 20;
 const int MAX_DRINKS = 50;
 const int MAX_CUSTOMERS = 100;
@@ -126,11 +127,11 @@ Customer* currentCustomer = nullptr;
 OrderQueue orderQueue;
 int orderCounter = 1000;
 
-// ========== Function Prototypes ==========
+//function prototypes
 void loadDrinksFromFile();
 void loadCustomers();
 void saveCustomers();
-void saveOrderToHistory(Customer* customer, float total);
+void saveOrderToHistory(Customer* customer, float total, int orderId);
 void displayDashboard();
 void viewAllProducts();
 void startOrder();
@@ -152,18 +153,17 @@ void initializeSystem();
 int generateUniqueOrderId();
 
 void initializeSystem() {
- 
     customers[0].id = 0;
-    strcpy(customers[0].name, "");      
-    strcpy(customers[0].email, "");    
-    strcpy(customers[0].password, ""); 
+    strcpy(customers[0].name, "Guest");
+    strcpy(customers[0].email, "guest@system");
+    strcpy(customers[0].password, "");
     customers[0].cart = nullptr;
     customers[0].orderHistory = nullptr;
-    customers[0].isGuest = true;       
-    customerCount = 1;                 
+    customers[0].isGuest = true;
+    customerCount = 1; 
 }
 
-// ========== Main Function ==========
+//main function
 int main() {
 	initializeSystem();
     loadDrinksFromFile();
@@ -175,7 +175,7 @@ int main() {
     
     int choice;
     do {
-        system("cls"); // Clear screen (Windows)
+        system("cls");
         displayDashboard();
         
         cout<<"\nEnter your choice: ";
@@ -202,7 +202,7 @@ int main() {
     return 0;
 }
 
-// ========== Core Function Implementations ==========
+//core function implementations
 void loadDrinksFromFile() {
     ifstream file("mixue.txt");
     if (!file) {
@@ -210,62 +210,113 @@ void loadDrinksFromFile() {
         return;
     }
     
-    while (file >> drinkMenu[drinkCount].name 
-                >> drinkMenu[drinkCount].category 
-                >> drinkMenu[drinkCount].price 
-                >> drinkMenu[drinkCount].calories) {
-        drinkMenu[drinkCount].id = drinkCount + 1;
-        strcpy(drinkMenu[drinkCount].iceLevel, "Regular");
-        strcpy(drinkMenu[drinkCount].sweetness, "Regular");
-        drinkMenu[drinkCount].quantity = 1;
-        drinkCount++;
+   string line;
+    while (drinkCount < MAX_DRINKS && getline(file, line)) {
+        size_t pos1 = line.find(',');
+        size_t pos2 = line.find(',', pos1+1);
+        size_t pos3 = line.find(',', pos2+1);
+        size_t pos4 = line.find(',', pos3+1);
+        
+        if (pos1 != string::npos && pos2 != string::npos && 
+            pos3 != string::npos && pos4 != string::npos) {
+            //ID
+            drinkMenu[drinkCount].id = stoi(line.substr(0, pos1));
+            
+            //name
+            string name = line.substr(pos1+1, pos2-pos1-1);
+            strncpy(drinkMenu[drinkCount].name, name.c_str(), 49);
+            drinkMenu[drinkCount].name[49] = '\0';
+            
+            //category
+            string category = line.substr(pos2+1, pos3-pos2-1);
+            strncpy(drinkMenu[drinkCount].category, category.c_str(), 19);
+            drinkMenu[drinkCount].category[19] = '\0';
+            
+            //price
+            drinkMenu[drinkCount].price = stof(line.substr(pos3+1, pos4-pos3-1));
+            
+            //calories
+            drinkMenu[drinkCount].calories = stoi(line.substr(pos4+1));
+            
+            //set default values
+            strcpy(drinkMenu[drinkCount].iceLevel, "Regular");
+            strcpy(drinkMenu[drinkCount].sweetness, "Regular");
+            drinkMenu[drinkCount].quantity = 1;
+            
+            drinkCount++;
+        }
     }
     file.close();
-    cout<<"Loaded " << drinkCount << " drinks from file\n";
+    cout << "Loaded " << drinkCount << " drinks from file\n";
 }
 
 void loadCustomers() {
+	initializeSystem();
+	
     ifstream file("customers.txt");
     if (!file) {
-        cout << "No existing customer data\n";
+        cout << "No existing customer data.\n";
         return;
     }
     
-    // Initialize guest account
-    customers[0].id = 0;
-    strcpy(customers[0].name, "Guest");
-    strcpy(customers[0].email, "guest@system");
-    strcpy(customers[0].password, "");
-    customers[0].cart = nullptr;
-    customers[0].orderHistory = nullptr;
-    customerCount = 1; // Guest is index 0
-
-    // Load registered customers starting from index 1
-    while (customerCount < MAX_CUSTOMERS && 
-           file >> customers[customerCount].id) {
-        file.ignore();
-        file.getline(customers[customerCount].name, 50, ' ');
-        file.getline(customers[customerCount].email, 100, ' ');
-        file.getline(customers[customerCount].password, 50);
+string line;
+while (customerCount < MAX_CUSTOMERS && getline(file, line)) {
+        size_t pos1 = line.find(',');
+        size_t pos2 = line.find(',', pos1+1);
+        size_t pos3 = line.find(',', pos2+1);
         
-        customers[customerCount].cart = nullptr;
-        customers[customerCount].orderHistory = nullptr;
-        customerCount++;
+        if (pos1 != string::npos && pos2 != string::npos && pos3 != string::npos) {
+            //ID
+            customers[customerCount].id = stoi(line.substr(0, pos1));
+            
+            //name
+            string name = line.substr(pos1+1, pos2-pos1-1);
+            if (!name.empty() && name[0] == ' ') {
+                name = name.substr(1);
+            }
+            strncpy(customers[customerCount].name, name.c_str(), 49);
+            customers[customerCount].name[49] = '\0';
+            
+            //email
+            string email = line.substr(pos2+1, pos3-pos2-1);
+            if (!email.empty() && email[0] == ' ') {
+                email = email.substr(1);
+            }
+            strncpy(customers[customerCount].email, email.c_str(), 99);
+            customers[customerCount].email[99] = '\0';
+            
+            //password
+            string password = line.substr(pos3+1);
+            if (!password.empty() && password[0] == ' ') {
+                password = password.substr(1);
+            }
+            strncpy(customers[customerCount].password, password.c_str(), 49);
+            customers[customerCount].password[49] = '\0';
+            
+            customers[customerCount].cart = nullptr;
+            customers[customerCount].orderHistory = nullptr;
+            customers[customerCount].isGuest = false;
+            customerCount++;
+        }
     }
     file.close();
 }
 
 void saveCustomers() {
     ofstream file("customers.txt");
-    if (!file) return;
+    if (!file) {
+        cout << "Error saving customer data!\n";
+        return;
+    }
+
     for (int i = 1; i < customerCount; i++) {
-        file << customers[i].id << " "
-             << customers[i].name << " "
-             << customers[i].email << " "
+        file << customers[i].id << ","
+             << customers[i].name << ","
+             << customers[i].email << ","
              << customers[i].password << "\n";
     }
     file.close();
-    cout<<"Customer data saved\n";
+    cout << "Customer data saved in CSV format\n";
 }
 
 void displayDashboard() {
@@ -298,9 +349,9 @@ void displayDashboard() {
     cout<<"|  [0] Exit                        | Close the application                   |\n";
     cout<<"|----------------------------------------------------------------------------|\n";
 
-    // Optional system stats
-    printf("  Total Drinks: %-3d   |  Registered Users: %-3d   |  Active Queue: %d\n",
-           drinkCount, customerCount - 1, orderQueue.size());
+
+    printf("  Total Drinks: %-3d   |  Registered Users: %-3d  ",
+           drinkCount, customerCount - 1);
 }
 
 
@@ -463,14 +514,14 @@ void startOrder() {
 
         Drink selected = drinkMenu[drinkChoice - 1];
 
-        // Set quantity
+        //Set quantity
         int qty;
         cout<<"\nEnter quantity (1-" << MAX_QUANTITY << "): ";
         cin>>qty;
         if (qty < 1 || qty > MAX_QUANTITY) qty = 1;
         selected.quantity = qty;
 
-        // Set ice level
+        //Set ice level
         cout<<"\nChoose Ice Level:\n";
         cout<<"1. Regular\n2. Less\n3. None\n";
         int ice;
@@ -483,7 +534,7 @@ void startOrder() {
         }
         selected.iceChoice = ice;
 
-        // Set sweetness
+        //Set sweetness
         cout<<"\nChoose Sweetness:\n";
         cout<<"1. Regular\n2. Less\n3. None\n";
         int sweet;
@@ -496,7 +547,7 @@ void startOrder() {
         }
         selected.sweetChoice = sweet;
 
-        // Add to cart
+        //Add to cart
         addToCart(selected);
         cout<<"Item added to cart!\n";
 
@@ -516,7 +567,7 @@ void addToCart(Drink drink) {
     newItem->next = nullptr;
     
     if (!currentCustomer) {
-        // For guests, create a temporary cart
+        //For guests, create a temporary cart
         if (!customers[0].cart) {
             customers[0].cart = newItem;
         } else {
@@ -659,137 +710,115 @@ void clearCart() {
 
 void processPayment() {
     system("cls");
-    cout<<"+--------------------------------------------------+\n";
-    cout<<"|                    PAYMENT                       |\n";
-    cout<<"+--------------------------------------------------+\n";
+    cout << "+--------------------------------------------------+\n";
+    cout << "|                    PAYMENT                       |\n";
+    cout << "+--------------------------------------------------+\n";
     
+    //get appropriate cart (current user or guest)
     CartItem* cart = currentCustomer ? currentCustomer->cart : customers[0].cart;
     if (!cart) {
-        cout<<"| Your cart is empty!                              |\n";
-        cout<<"+--------------------------------------------------+\n";
+        cout << "| Your cart is empty!                              |\n";
+        cout << "+--------------------------------------------------+\n";
         pressAnyKey();
-        displayDashboard();
         return;
     }
     
+    //display cart contents
     float total = calculateCartTotal();
-    float discount = 0;
+    cout << "\n+--------------------------------------------------+\n";
+    cout << "|                  CART ITEMS                      |\n";
+    cout << "+--------------------------------------------------+\n";
     
-   // Display cart items
-CartItem* current = cart;
-int index = 1;
-cout<<"\n+--------------------------------------------------+\n";
-cout<<"|                  CART ITEMS                      |\n";
-cout<<"+--------------------------------------------------+\n";
-while (current) {
-    cout<<"| " << index++ << ". " << current->drink.name 
-         << " (" << current->drink.quantity << "x)"
-         << " - RM " << current->drink.price * current->drink.quantity << "\n";
-    current = current->next;
-}
-cout<<"+--------------------------------------------------+\n";
-
-cout<<"| SUBTOTAL: RM " << total << "\n";
-cout<<"+--------------------------------------------------+\n";
-
-    
-    // Discount code (only for registered users)
-    if (currentCustomer) {
-        char discountCode[20];
-        cout<<" Enter discount code (or 0 to skip): ";
-        cin>>discountCode;
-        
-        if (strcmp(discountCode, "0") != 0) {
-            // Check discount code (simplified)
-            ifstream discountFile("discount.txt");
-            if (discountFile) {
-                char validCode[20];
-                float discountPercent;
-                discountFile >> validCode >> discountPercent;
-                
-                if (strcmp(discountCode, validCode) == 0) {
-                    discount = total * (discountPercent / 100);
-                    cout<<"| Discount applied: RM " << discount << "\n";
-                } else {
-                    cout<<"| Invalid discount code                            |\n";
-                }
-                discountFile.close();
-            } else {
-                cout<<"| No discount codes available                       |\n";
-            }
-        }
+    CartItem* current = cart;
+    int itemNum = 1;
+    while (current) {
+        cout << "| " << itemNum++ << ". " << current->drink.name 
+             << " (" << current->drink.quantity << "x)"
+             << " - RM " << current->drink.price * current->drink.quantity << "\n";
+        current = current->next;
     }
     
-    float finalTotal = total - discount;
-    cout<<"| FINAL TOTAL: RM " << finalTotal << "\n";
-    cout<<"+--------------------------------------------------+\n\n";
+    cout << "+--------------------------------------------------+\n";
+    cout << "| SUBTOTAL: RM " << total << "\n";
+    cout << "| FINAL TOTAL: RM " << total << "\n";
+    cout << "+--------------------------------------------------+\n\n";
     
-    cout<<"+-------------------- OPTIONS ---------------------+\n";
-    cout<<"| 1. Confirm Payment                               |\n";
-    cout<<"| 2. Edit Cart                                     |\n";
-    cout<<"| 0. Cancel                                        |\n";
-    cout<<"+--------------------------------------------------+\n";
+    //payment options
+    cout << "+-------------------- OPTIONS ---------------------+\n";
+    cout << "| 1. Confirm Payment                               |\n";
+    cout << "| 2. Edit Cart                                     |\n";
+    cout << "| 0. Cancel                                        |\n";
+    cout << "+--------------------------------------------------+\n";
     
     int choice;
-    cout<<"Enter choice: ";
-    cin>>choice;
+    cout << "Enter choice: ";
+    cin >> choice;
     
-    if (choice == 1) {
-        cout<<"Processing payment...\n";
-        
-        // Simulate processing time
-        for (int i = 3; i > 0; i--) {
-            cout<<i << "... ";
-            time_t start = time(0);
-            while (time(0) - start < 1) {} // 1 second delay
+    switch (choice) {
+        case 1: {
+            //process payment
+            cout << "Processing payment...\n";
+            for (int i = 3; i > 0; i--) {
+                cout << i << "... ";
+                Sleep(1000); // More reliable delay for Windows
+            }
+            
+            //process order ID
+            int orderId = generateUniqueOrderId();
+            if (orderId == -1) {
+                cout << "Payment failed - could not generate order ID\n";
+                pressAnyKey();
+                return;
+            }
+            
+            orderQueue.enqueue(orderId);
+            int processedId = orderQueue.dequeue();
+            
+            //order confirmation
+            cout << "\n\n+=================================================+\n";
+            cout << "|               ORDER COMPLETE                    |\n";
+            cout << "+=================================================+\n";
+            cout << "| Order ID: #" << orderId << "\n";
+            cout << "| Total   : RM " << total << "\n";
+            cout << "| Items   :\n";
+            
+            current = cart;
+            while (current) {
+                cout << "| - " << current->drink.name 
+                     << " (" << current->drink.quantity << "x)\n";
+                current = current->next;
+            }
+            cout << "+--------------------------------------------------+\n";
+            
+            //save order and clean up
+            saveOrderToHistory(currentCustomer ? currentCustomer : &customers[0], total, orderId);
+            clearCart();
+            pressAnyKey();
+            break;
         }
         
-    // Generate unique order ID
-  	    int orderId = generateUniqueOrderId();
-        orderQueue.enqueue(orderId);
-        int processedId = orderQueue.dequeue();
-        
-cout<<"\n\n+=================================================+\n";
-cout<<"|               ORDER COMPLETE                    |\n";
-cout<<"+=================================================+\n";
-cout<<"| Order ID: #" << processedId << "\n";
-cout<<"| Total   : RM " << finalTotal << "\n";
-cout<<"| Items   :\n";
-
-        
-        current = cart;
-        while (current) {
-            cout<<"| - " << current->drink.name 
-                 << " (" << current->drink.quantity << "x)\n";
-            current = current->next;
-        }
-        cout<<"+--------------------------------------------------+\n";
-        
-        // Save order to history (for ALL users)
-        saveOrderToHistory(currentCustomer ? currentCustomer : &customers[0], finalTotal);
-        
-        // Clear cart
-        clearCart();
-        
-        pressAnyKey();
-    }
-    else if (choice == 2) {
-        editCart(); 
-        processPayment();
-    }
-    else if (choice == 0) {
-        return;
+        case 2:
+            editCart();
+            processPayment(); //restart payment process
+            break;
+            
+        case 0:
+            return; //cancel payment
+            
+        default:
+            cout << "Invalid choice!\n";
+            pressAnyKey();
     }
 }
 
 
-void saveOrderToHistory(Customer* customer, float total) {
+void saveOrderToHistory(Customer* customer, float total, int orderId) {
     OrderHistory* newOrder = new OrderHistory;
-    newOrder->orderId = orderCounter;
+    newOrder->orderId = orderId;
     newOrder->orderDate = time(0);
     newOrder->totalAmount = total;
     
-    // Count items and build item details string
+    //count items and build item details string
     int itemCount = 0;
     string itemDetails;
     CartItem* current = customer->cart;
@@ -808,24 +837,23 @@ void saveOrderToHistory(Customer* customer, float total) {
         itemDetails += itemStr;
         current = current->next;
         
-        // Add separator if more items
         if (current) {
             itemDetails += ", ";
         }
     }
 
-    // Add to history (original unchanged)
+    //add to history
     newOrder->next = customer->orderHistory;
     customer->orderHistory = newOrder;
     
-    // Save to file in simplified format
+    //save to file
     ofstream historyFile("order_history.txt", ios::app);
     if (historyFile) {
         char timeStr[20];
         strftime(timeStr, sizeof(timeStr), "%Y-%m-%d %H:%M:%S", localtime(&newOrder->orderDate));
         
         historyFile << (customer->id ? customer->id : 0) << "|"
-                   << newOrder->orderId << "|"
+                   << orderId << "|"  //use the provided orderId
                    << timeStr << "|"
                    << total << "|"
                    << itemCount << "|"
@@ -833,8 +861,7 @@ void saveOrderToHistory(Customer* customer, float total) {
         
         historyFile.close();
         
-        // Also print a simple confirmation message
-        cout<<"Order #" << newOrder->orderId << " saved to history.\n";
+        cout << "Order #" << orderId << " saved to history.\n";
     } else {
         cerr << "Error: Unable to open order_history.txt for writing!\n";
     }
@@ -1065,7 +1092,7 @@ void viewProfile() {
     }
 }
 
-// ========== Algorithm Implementations ==========
+// Algorithm Implementations 
 void bubbleSortDrinks(int sortBy) {
     bool swapped;
     for (int i = 0; i < drinkCount - 1; i++) {
@@ -1097,9 +1124,6 @@ int binarySearchDrink(int id) {
     int left = 0;
     int right = drinkCount - 1;
     
-    // First sort by ID for binary search
-    bubbleSortDrinks(0); // Simplified
-    
     while (left <= right) {
         int mid = left + (right - left) / 2;
         
@@ -1116,7 +1140,7 @@ int binarySearchDrink(int id) {
     return -1;
 }
 
-// ========== Helper Functions ==========
+//helper functions 
 void displayDrink(Drink d) {
     cout<<d.name << " (" << d.category << ")";
     cout<<"   Price: RM " << d.price;
@@ -1137,10 +1161,10 @@ float calculateCartTotal() {
 
 void pressAnyKey() {
     cout<<"\nPress any key to continue...";
-    getch(); // Windows-specific, use cin.get() for cross-platfoRM 
+    getch();
 }
 
-// ========== Friend Functions ==========
+//friend functions
 class CustomerSystem {
 private:
     int systemId;
@@ -1307,46 +1331,41 @@ void showCartInterface() {
 }
 
 int generateUniqueOrderId() {
-    ifstream historyFile("order_history.txt");
-    set<int> existingIds;
-    string line;
+    // Start with current order counter
+    int newId = orderCounter;
     
-    // Read existing order IDs from file
-    while (getline(historyFile, line)) {
-        if (line.find('|') != string::npos) {
-            size_t firstPipe = line.find('|');
-            size_t secondPipe = line.find('|', firstPipe + 1);
-            if (firstPipe != string::npos && secondPipe != string::npos) {
-                string idStr = line.substr(firstPipe + 1, secondPipe - firstPipe - 1);
+    // Check if ID already exists in history file
+    ifstream historyFile("order_history.txt");
+    if (historyFile) {
+        set<int> existingIds;
+        string line;
+        
+        while (getline(historyFile, line)) {
+            // Extract order ID from each line (format: customerID|orderID|...)
+            size_t pipePos = line.find('|', line.find('|') + 1);
+            if (pipePos != string::npos) {
                 try {
-                    int id = stoi(idStr);
-                    existingIds.insert(id);
+                    int existingId = stoi(line.substr(pipePos, line.find('|', pipePos) - pipePos));
+                    existingIds.insert(existingId);
                 } catch (...) {
-                    // Ignore invalid entries
+                    continue; // Skip invalid entries
                 }
             }
         }
-    }
-    historyFile.close();
-    
-    // Find the next available ID
-    int newId = orderCounter;
-    while (existingIds.find(newId) != existingIds.end()) {
-        newId++;
-        if (newId > 9999) {
-            newId = 1001;  // Wrap around if we reach 9999
-        }
-        // Safety check to prevent infinite loop
-        if (newId == orderCounter) {
-            cerr << "Error: All order IDs are in use!\n";
-            return -1;
+        historyFile.close();
+
+        // Find next available ID
+        while (existingIds.count(newId)) {
+            newId++;
+            if (newId > 9999) newId = 1001; // Wrap around
+            if (newId == orderCounter) { // Full loop completed
+                cerr << "Error: No available order IDs!\n";
+                return -1;
+            }
         }
     }
-    
-    orderCounter = newId + 1;  // Update the counter for next order
-    if (orderCounter > 9999) {
-        orderCounter = 1001;
-    }
-    
+
+    // Update counter for next order
+    orderCounter = (newId >= 9999) ? 1001 : newId + 1;
     return newId;
 }
