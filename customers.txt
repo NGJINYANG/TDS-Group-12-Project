@@ -8,3 +8,4 @@
 1008,Rachel Low,rachel.low@example.com,r@chel135
 1009,Brandon Yap,brandon.yap@example.com,Br@ndo007
 1010,Chloe Teo,chloe.teo@example.com,chloeteo99
+1012,Yang,yang@gmail.com,123123
