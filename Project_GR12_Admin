@@ -1131,119 +1131,102 @@ void editCustomers() {
 };
  
 void searchCustomers() {
+    clearScreen();
+
+    ifstream inFile("customers.txt");
+    if (!inFile) {
+        cout << "Failed to open customers.txt\n";
+        pause();
+        return;
+    }
+
+    Customers users[100];
+    int count = 0;
+
+    // Load all users from file
+    while (inFile >> users[count].id) {
+        inFile.ignore();
+        inFile.getline(users[count].name, 50, ',');
+        inFile.getline(users[count].email, 50, ',');
+        inFile.getline(users[count].password, 20);
+        count++;
+    }
+    inFile.close();
+
+    if (count == 0) {
+        cout << "No users available to search.\n";
+        pause();
+        return;
+    }
+
+    char input[100];
+
     while (true) {
         clearScreen();
         cout << "==================== Search User Page ====================\n";
+        cout << "\n                       User List\n";
+        cout << "-----------------------------------------------------------\n";
+        cout << "| ID  | Name               | Email            | Password   |\n";
+        cout << "-----------------------------------------------------------\n";
 
-        ifstream inFile("customers.txt");
-        if (!inFile) {
-            cout << "Error opening customers.txt file.\n";
-            pause();
-            return;
+        for (int i = 0; i < count; i++) {
+            Customers& u = users[i];
+            cout << "| " << setw(4) << right << u.id << " | "
+                 << setw(18) << left << u.name << "| "
+                 << setw(16) << left << u.email << "| "
+                 << setw(10) << left << u.password << " |\n";
         }
 
-        cout << "\nSearch by:\n";
-        cout << "1. Customers ID\n";
-        cout << "2. Name keyword\n";
-        cout << "0. Return to menu\n";
-        cout << "Enter choice: ";
-        string choiceInput;
-        getline(cin, choiceInput);
+        cout << "-----------------------------------------------------------\n";
+        cout << "\nEnter User ID or Name keyword to search (0 to go back): ";
+        cin.getline(input, 100);
 
-        if (choiceInput == "0") {
-            inFile.close();
-            return;
-        }
+        if (strcmp(input, "0") == 0) break;
 
-        bool found = false;
+        string keyword = input;
+        for (char& c : keyword) c = tolower(c);
+
         Customers resultList[100];
-        int resultCount = 0;
+        int matchCount = 0;
 
-        if (choiceInput == "1") {
-            string idInput;
-            cout << "Enter Customers ID to search (0 to cancel): ";
-            getline(cin, idInput);
-            if (idInput == "0") continue;
+        for (int i = 0; i < count; i++) {
+            Customers& u = users[i];
 
-            bool valid = true;
-            for (char c : idInput) {
-                if (!isdigit(c)) valid = false;
+            string uname = u.name;
+            for (char& c : uname) c = tolower(c);
+
+            bool idMatch = false;
+            if (isdigit(input[0])) {
+                int inputId = atoi(input);
+                idMatch = (u.id == inputId);
             }
 
-            if (!valid || idInput.empty()) {
-                cout << "Invalid Customers ID! Must be numeric.\n";
-                pause();
-                continue;
+            if (idMatch || uname.find(keyword) != string::npos) {
+                resultList[matchCount++] = u;
             }
-
-            int searchId = stoi(idInput);
-            Customers c;
-            while (inFile >> c.id) {
-                inFile.ignore();
-                inFile.getline(c.name, 50, ',');
-                inFile.getline(c.email, 50, ',');
-                inFile.getline(c.password, 20);
-
-                if (c.id == searchId) {
-                    resultList[resultCount++] = c;
-                    found = true;
-                    break;
-                }
-            }
-
-        } else if (choiceInput == "2") {
-            string keyword;
-            cout << "Enter Name keyword to search (0 to cancel): ";
-            getline(cin, keyword);
-            if (keyword == "0") continue;
-
-            for (char& c : keyword) c = tolower(c);
-
-            Customers c;
-            while (inFile >> c.id) {
-                inFile.ignore();
-                inFile.getline(c.name, 50, ',');
-                inFile.getline(c.email, 50, ',');
-                inFile.getline(c.password, 20);
-
-                string uname(c.name);
-                for (char& c : uname) c = tolower(c);
-
-                if (uname.find(keyword) != string::npos) {
-                    resultList[resultCount++] = c;
-                    found = true;
-                }
-            }
-
-        } else {
-            cout << "Invalid choice.\n";
-            pause();
-            continue;
         }
 
-        inFile.close();
-
-        // Display result
         clearScreen();
         cout << "==================== Search Result ====================\n";
+        cout << "\n                       User List\n";
         cout << "-----------------------------------------------------------\n";
-        cout << "| ID  | Name               | Email            | Password      |\n";
+        cout << "| ID  | Name               | Email            | Password   |\n";
         cout << "-----------------------------------------------------------\n";
 
-        if (found) {
-            for (int i = 0; i < resultCount; i++) {
+        if (matchCount > 0) {
+            for (int i = 0; i < matchCount; i++) {
                 Customers& u = resultList[i];
                 cout << "| " << setw(4) << right << u.id << " | "
                      << setw(18) << left << u.name << "| "
                      << setw(16) << left << u.email << "| "
-                     << setw(12) << left << u.password << " |\n";
+                     << setw(10) << left << u.password << " |\n";
             }
         } else {
             cout << "|               No matching users found.                |\n";
         }
 
         cout << "-----------------------------------------------------------\n";
-        pause(); 
+        pause();
     }
 }; 
 
