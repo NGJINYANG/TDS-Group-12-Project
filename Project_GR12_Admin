@@ -1173,8 +1173,8 @@ void searchCustomers() {
             Customers& u = users[i];
             cout << "| " << setw(4) << right << u.id << " | "
                  << setw(18) << left << u.name << "| "
-                 << setw(16) << left << u.email << "| "
-                 << setw(10) << left << u.password << " |\n";
+                 << setw(13) << left << u.email << "| "
+                 << setw(20) << left << u.password << " |\n";
         }
 
         cout << "-----------------------------------------------------------\n";
