@@ -144,7 +144,7 @@ void clearScreen() {
 
 // ========== File Handling ==========
 void loadDrinksFromFile() {
-    ifstream file("mixue2.txt");
+    ifstream file("mixue.txt");
     if (!file) {
         cout << "No existing drink data found.\n";
         return;
@@ -178,7 +178,7 @@ void loadDrinksFromFile() {
 }; 
 
 void saveDrinksToFile() {
-    ofstream outFile("mixue2.txt");
+    ofstream outFile("mixue.txt");
     if (!outFile) {
         cout << "Error saving to file.\n";
         return;
@@ -485,7 +485,7 @@ void addDrink() {
         // Add to queue and save to file
         drinkQueue.enqueue(newDrink);
 
-        ofstream outFile("mixue2.txt", ios::app);
+        ofstream outFile("mixue.txt", ios::app);
         if (!outFile) {
             cout << "Error writing to file!\n";
             pause();
@@ -647,7 +647,7 @@ void editDrink() {
         }
 
         // Save
-        ofstream outFile("mixue2.txt");
+        ofstream outFile("mixue.txt");
         for (int j = drinkQueue.front; j <= drinkQueue.rear; j++) {
             Drink& dd = drinkQueue.queue[j];
             outFile << dd.id << "," << dd.name << "," << dd.type << "," << dd.price << "," << dd.stock << endl;
@@ -1495,10 +1495,10 @@ void displayCustomers() {
     }
     
     bool hasData = false;
-    cout << "\n                                  Customer List                              \n";
-    cout << "-------------------------------------------------------------------------------\n";
-    cout << "| ID    | Name                     | Email            | Password                  |\n";
-    cout << "-------------------------------------------------------------------------------\n";
+    cout << "\n                                    Customer List                                    \n";
+    cout << "----------------------------------------------------------------------------------------\n";
+    cout << "| ID    | Name                     | Email                          | Password         |\n";
+    cout << "----------------------------------------------------------------------------------------\n";
     
     Customers c;
     string line;
@@ -1520,20 +1520,20 @@ void displayCustomers() {
         strncpy(c.email, emailStr.c_str(), sizeof(c.email));
         c.email[sizeof(c.email) - 1] = '\0';
 
-        strncpy(c.password, passwordStr.c_str(), sizeof(c.password));
+        strncpy(c.password, passwordStr.c_str(), sizeof(c.password) - 1);
         c.password[sizeof(c.password) - 1] = '\0';
 
         // Display formatted output
         cout << "| " << setw (6) << left <<c.id
              << "| " << setw(25) << left <<c.name
-             << "| " << setw(16) << left <<c.email
-             << "| " << setw(24) << left <<c.password
+             << "| " << setw(30) << left <<c.email
+             << "| " << setw(18) << left <<c.password
              << "|\n";
 
         hasData = true;
     }
 
-    cout << "-------------------------------------------------------------------------------\n";
+    cout << "---------------------------------------------------------------------------------------\n";
 
     if (!hasData) {
         cout << "No users found.\n";
