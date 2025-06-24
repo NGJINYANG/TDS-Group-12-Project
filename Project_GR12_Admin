@@ -1130,7 +1130,7 @@ void editCustomers() {
     }
 };
  
-void searchUser() {
+void searchCustomers() {
     clearScreen();
 
     ifstream inFile("customers.txt");
