@@ -659,6 +659,17 @@ void editDrink() {
     }
 };
 
+// Binary search function
+int binarySearchById(Drink arr[], int left, int right, int id) {
+    while (left <= right) {
+        int mid = left + (right - left) / 2;
+        if (arr[mid].id == id) return mid;
+        else if (arr[mid].id < id) left = mid + 1;
+        else right = mid - 1;
+    }
+    return -1;
+}
+
 void searchDrink() {
     clearScreen();
     loadDrinksFromFile();
@@ -700,33 +711,37 @@ void searchDrink() {
         string keyword = input;
         for (char& c : keyword) c = tolower(c);
 
-        // Create an array to store matched drinks
         Drink resultList[MAX];
         int matchCount = 0;
 
-        // Loop through the queue and find matches
-        for (int i = drinkQueue.front; i <= drinkQueue.rear; i++) {
-            Drink& d = drinkQueue.queue[i];
-            string name = d.name;
-            string type = d.type;
-
-            // Convert name and type to lowercase for case-insensitive comparison
-            for (char& c : name) c = tolower(c);
-            for (char& c : type) c = tolower(c);
-
-            bool idMatch = false;
-            if (isdigit(input[0])) {
-                int inputId = atoi(input);
-                idMatch = (d.id == inputId);
+        // Check if input is a digit (ID search)
+        if (isdigit(input[0])) {
+            int inputId = atoi(input);
+            // Use binary search to find ID; drinkQueue.queue is the array, indexed from front to rear
+            int idx = binarySearchById(drinkQueue.queue, drinkQueue.front, drinkQueue.rear, inputId);
+            if (idx != -1) {
+                resultList[0] = drinkQueue.queue[idx];
+                matchCount = 1;
             }
+        } else {
+            // Name and type partial search (linear search)
+            for (int i = drinkQueue.front; i <= drinkQueue.rear; i++) {
+                Drink& d = drinkQueue.queue[i];
+                string name = d.name;
+                string type = d.type;
 
-            // If ID matches, or name/type contains keyword, store the result
-            if (idMatch || name.find(keyword) != string::npos || type.find(keyword) != string::npos) {
-                resultList[matchCount++] = d;
+                // Convert to lowercase
+                for (char& c : name) c = tolower(c);
+                for (char& c : type) c = tolower(c);
+
+                // If name or type contains keyword, add to results
+                if (name.find(keyword) != string::npos || type.find(keyword) != string::npos) {
+                    resultList[matchCount++] = d;
+                }
             }
         }
 
-        // Display the search results
+        // Display search results
         clearScreen();
         cout << "==================== Search Result ====================\n";
         cout << "\n                       Drink List\n";
@@ -748,7 +763,7 @@ void searchDrink() {
         }
 
         cout << "------------------------------------------------------------------\n";
-        pause(); // Wait for user to press Enter before going back to search page
+        pause(); // Wait for user to press Enter before returning to search page
     }
 }; 
 
@@ -1130,6 +1145,30 @@ void editCustomers() {
     }
 };
  
+// 简单冒泡排序按ID升序
+void sortCustomersById(Customers customers[], int count) {
+    for (int i = 0; i < count - 1; i++) {
+        for (int j = 0; j < count - 1 - i; j++) {
+            if (customers[j].id > customers[j + 1].id) {
+                Customers temp = customers[j];
+                customers[j] = customers[j + 1];
+                customers[j + 1] = temp;
+            }
+        }
+    }
+}
+
+int binarySearchById(Customers customers[], int count, int id) {
+    int left = 0, right = count - 1;
+    while (left <= right) {
+        int mid = left + (right - left) / 2;
+        if (customers[mid].id == id) return mid;
+        else if (customers[mid].id < id) left = mid + 1;
+        else right = mid - 1;
+    }
+    return -1;
+}
+
 void searchCustomers() {
     clearScreen();
 
@@ -1140,45 +1179,47 @@ void searchCustomers() {
         return;
     }
 
-    Customers users[100];
+    Customers customers[100];
     int count = 0;
 
-    // Load all users from file
-    while (inFile >> users[count].id) {
+    // Load all customers from file
+    while (inFile >> customers[count].id) {
         inFile.ignore();
-        inFile.getline(users[count].name, 50, ',');
-        inFile.getline(users[count].email, 50, ',');
-        inFile.getline(users[count].password, 20);
+        inFile.getline(customers[count].name, 50, ',');
+        inFile.getline(customers[count].email, 50, ',');
+        inFile.getline(customers[count].password, 20);
         count++;
     }
     inFile.close();
 
     if (count == 0) {
-        cout << "No users available to search.\n";
+        cout << "No customers available to search.\n";
         pause();
         return;
     }
+
+    sortCustomersById(customers, count);
 
     char input[100];
 
     while (true) {
         clearScreen();
-        cout << "==================== Search User Page ====================\n";
-        cout << "\n                       User List\n";
+        cout << "==================== Search Customers Page ====================\n";
+        cout << "\n                       Customers List\n";
         cout << "-----------------------------------------------------------\n";
         cout << "| ID  | Name               | Email            | Password   |\n";
         cout << "-----------------------------------------------------------\n";
 
         for (int i = 0; i < count; i++) {
-            Customers& u = users[i];
-            cout << "| " << setw(4) << right << u.id << " | "
-                 << setw(18) << left << u.name << "| "
-                 << setw(16) << left << u.email << "| "
-                 << setw(10) << left << u.password << " |\n";
+            Customers& c = customers[i];
+            cout << "| " << setw(4) << right << c.id << " | "
+                 << setw(18) << left << c.name << "| "
+                 << setw(16) << left << c.email << "| "
+                 << setw(10) << left << c.password << " |\n";
         }
 
         cout << "-----------------------------------------------------------\n";
-        cout << "\nEnter User ID or Name keyword to search (0 to go back): ";
+        cout << "\nEnter Customer ID or Name keyword to search (0 to go back): ";
         cin.getline(input, 100);
 
         if (strcmp(input, "0") == 0) break;
@@ -1189,40 +1230,43 @@ void searchCustomers() {
         Customers resultList[100];
         int matchCount = 0;
 
-        for (int i = 0; i < count; i++) {
-            Customers& u = users[i];
-
-            string uname = u.name;
-            for (char& c : uname) c = tolower(c);
-
-            bool idMatch = false;
-            if (isdigit(input[0])) {
-                int inputId = atoi(input);
-                idMatch = (u.id == inputId);
+        if (isdigit(input[0])) {
+            int inputId = atoi(input);
+            int idx = binarySearchById(customers, count, inputId);
+            if (idx != -1) {
+                resultList[0] = customers[idx];
+                matchCount = 1;
             }
+        } else {
+           
+            for (int i = 0; i < count; i++) {
+                Customers& c = customers[i];
+                string cname = c.name;
+                for (char& ch : cname) ch = tolower(ch);
 
-            if (idMatch || uname.find(keyword) != string::npos) {
-                resultList[matchCount++] = u;
+                if (cname.find(keyword) != string::npos) {
+                    resultList[matchCount++] = c;
+                }
             }
         }
 
         clearScreen();
         cout << "==================== Search Result ====================\n";
-        cout << "\n                       User List\n";
+        cout << "\n                       Customers List\n";
         cout << "-----------------------------------------------------------\n";
         cout << "| ID  | Name               | Email            | Password   |\n";
         cout << "-----------------------------------------------------------\n";
 
         if (matchCount > 0) {
             for (int i = 0; i < matchCount; i++) {
-                Customers& u = resultList[i];
-                cout << "| " << setw(4) << right << u.id << " | "
-                     << setw(18) << left << u.name << "| "
-                     << setw(16) << left << u.email << "| "
-                     << setw(10) << left << u.password << " |\n";
+                Customers& c = resultList[i];
+                cout << "| " << setw(4) << right << c.id << " | "
+                     << setw(18) << left << c.name << "| "
+                     << setw(16) << left << c.email << "| "
+                     << setw(10) << left << c.password << " |\n";
             }
         } else {
-            cout << "|               No matching users found.                |\n";
+            cout << "|               No matching customers found.                |\n";
         }
 
         cout << "-----------------------------------------------------------\n";
